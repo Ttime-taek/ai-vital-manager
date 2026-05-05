@@ -67,7 +67,7 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
         </div>
         <button
           onClick={() => onRemove(entry.id)}
-          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus-ring"
           aria-label="약물 삭제"
         >
           <Trash2 className="h-4 w-4" />

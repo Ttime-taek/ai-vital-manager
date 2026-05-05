@@ -43,3 +43,10 @@ body {
 .animate-fade-in-up {
   animation: fadeInUp 0.35s ease-out both;
 }
+
+/* 키보드 포커스 가시성 (WCAG, 마우스 클릭 시 링 숨김) */
+@layer utilities {
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/75 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50;
+  }
+}

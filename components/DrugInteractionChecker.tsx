@@ -230,7 +230,7 @@ export function DrugInteractionChecker({ medications }: Props) {
           <button
             type="button"
             onClick={() => addManual()}
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-ring"
           >
             추가
           </button>
@@ -258,7 +258,7 @@ export function DrugInteractionChecker({ medications }: Props) {
                 <button
                   type="button"
                   onClick={() => removeManual(m.id)}
-                  className="text-xs font-semibold text-slate-500 hover:text-rose-700"
+                  className="text-xs font-semibold text-slate-500 hover:text-rose-700 focus-ring rounded-lg px-1 py-0.5"
                 >
                   목록에서 제거
                 </button>
@@ -273,7 +273,7 @@ export function DrugInteractionChecker({ medications }: Props) {
           type="button"
           onClick={() => runCheck()}
           disabled={!canRun}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           상호작용 확인

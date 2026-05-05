@@ -179,7 +179,7 @@ export function NutritionProductPanel({ registeredMedicationNames = [] }: Nutrit
           <button
             type="button"
             onClick={() => setMode("usda_search")}
-            className={`rounded-xl border px-3 py-2 text-xs font-semibold shadow-card transition ${
+            className={`rounded-xl border px-3 py-2 text-xs font-semibold shadow-card transition focus-ring ${
               mode === "usda_search"
                 ? "border-brand-300 bg-brand-50 text-brand-800"
                 : "border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50/40"
@@ -190,7 +190,7 @@ export function NutritionProductPanel({ registeredMedicationNames = [] }: Nutrit
           <button
             type="button"
             onClick={() => setMode("off_barcode")}
-            className={`rounded-xl border px-3 py-2 text-xs font-semibold shadow-card transition ${
+            className={`rounded-xl border px-3 py-2 text-xs font-semibold shadow-card transition focus-ring ${
               mode === "off_barcode"
                 ? "border-brand-300 bg-brand-50 text-brand-800"
                 : "border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50/40"
@@ -229,7 +229,7 @@ export function NutritionProductPanel({ registeredMedicationNames = [] }: Nutrit
           type="button"
           onClick={run}
           disabled={loading || (mode === "usda_search" ? query.trim().length === 0 : barcode.trim().length === 0)}
-          className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-500 to-brand-400 px-5 py-3 text-sm font-semibold text-white shadow-card transition hover:from-brand-600 hover:to-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-brand-500 to-brand-400 px-5 py-3 text-sm font-semibold text-white shadow-card transition hover:from-brand-600 hover:to-brand-500 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? "불러오는 중..." : "불러오기"}
         </button>

@@ -144,7 +144,7 @@ export default function HomePage() {
                   type="button"
                   onClick={handleReset}
                   disabled={loading || meds.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   전체 초기화
@@ -199,7 +199,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setShowSafety((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-ring"
               aria-expanded={showSafety}
             >
               {showSafety ? (

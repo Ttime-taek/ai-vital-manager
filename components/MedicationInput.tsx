@@ -60,7 +60,7 @@ export function MedicationInput({ onAdd, loading }: MedicationInputProps) {
         <button
           onClick={submit}
           disabled={loading || !value.trim()}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -82,7 +82,7 @@ export function MedicationInput({ onAdd, loading }: MedicationInputProps) {
               type="button"
               onClick={() => onAdd(s)}
               disabled={loading}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50"
+              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 transition hover:border-brand-400 hover:bg-brand-50 hover:text-brand-700 focus-ring disabled:opacity-50"
             >
               {s}
             </button>

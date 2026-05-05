@@ -150,7 +150,7 @@ export function SafetyChecker() {
                   }));
                   setNeedsPick(null);
                 }}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-800 transition hover:border-brand-400 hover:bg-brand-50"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-800 transition hover:border-brand-400 hover:bg-brand-50 focus-ring"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{c.name}</span>
@@ -166,7 +166,7 @@ export function SafetyChecker() {
             <button
               type="button"
               onClick={() => setNeedsPick(null)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 focus-ring"
             >
               나중에
             </button>
@@ -258,7 +258,7 @@ export function SafetyChecker() {
           type="button"
           onClick={() => submit(false)}
           disabled={!canSubmit}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           무료로 판정
@@ -274,7 +274,7 @@ export function SafetyChecker() {
               setError(null);
               setRawItems("");
             }}
-            className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-ring"
           >
             초기화
           </button>
@@ -310,7 +310,7 @@ export function SafetyChecker() {
                 type="button"
                 onClick={() => submit(true)}
                 disabled={paidLoading}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 focus-ring disabled:opacity-50"
               >
                 {paidLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
                 상세 보기(유료)
