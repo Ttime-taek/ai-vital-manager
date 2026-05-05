@@ -44,6 +44,12 @@ body {
   animation: fadeInUp 0.35s ease-out both;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none;
+  }
+}
+
 /* 키보드 포커스 가시성 (WCAG, 마우스 클릭 시 링 숨김) */
 @layer utilities {
   .focus-ring {
