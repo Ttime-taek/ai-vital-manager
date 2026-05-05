@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import { Header } from "@/components/Header";
 import { MedicationInput } from "@/components/MedicationInput";
 import { MedicationCard } from "@/components/MedicationCard";
@@ -8,6 +9,9 @@ import { ScheduleTimeline } from "@/components/ScheduleTimeline";
 import { WarningPanel } from "@/components/WarningPanel";
 import { StatsBar } from "@/components/StatsBar";
 import { EmptyState } from "@/components/EmptyState";
+import { DrugInteractionChecker } from "@/components/DrugInteractionChecker";
+import { NutritionProductPanel } from "@/components/NutritionProductPanel";
+import { SafetyChecker } from "@/components/SafetyChecker";
 import { buildSchedule, getSlotsForFrequency } from "@/lib/scheduleEngine";
 import type { MedicationEntry, MedicationInfo } from "@/lib/types";
 
@@ -21,6 +25,7 @@ interface AnalyzeResponse {
 export default function HomePage() {
   const [meds, setMeds] = useState<MedicationEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showSafety, setShowSafety] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "info" | "error";
@@ -94,6 +99,14 @@ export default function HomePage() {
     setMeds((prev) => prev.filter((m) => m.id !== id));
   }, []);
 
+  const handleReset = useCallback(() => {
+    if (meds.length === 0) return;
+    const ok = window.confirm("등록된 약물을 모두 초기화할까요?");
+    if (!ok) return;
+    setMeds([]);
+    showToast("초기화되었습니다.", "success");
+  }, [meds.length]);
+
   const schedule = useMemo(() => buildSchedule(meds), [meds]);
 
   const stats = useMemo(() => {
@@ -120,7 +133,24 @@ export default function HomePage() {
       <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <MedicationInput onAdd={handleAdd} loading={loading} />
+            <div className="space-y-3">
+              <MedicationInput onAdd={handleAdd} loading={loading} />
+              <DrugInteractionChecker medications={meds} />
+              <NutritionProductPanel
+                registeredMedicationNames={meds.map((m) => m.info.name)}
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={loading || meds.length === 0}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  전체 초기화
+                </button>
+              </div>
+            </div>
           </div>
           <div className="lg:col-span-1">
             <StatsBar
@@ -157,6 +187,39 @@ export default function HomePage() {
             <WarningPanel meds={meds} />
           </div>
         </div>
+
+        <section className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">30초 안전 판정 (선택)</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                필요할 때만 열어서 빠르게 안전 체크를 진행하세요.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSafety((v) => !v)}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+              aria-expanded={showSafety}
+            >
+              {showSafety ? (
+                <>
+                  접기 <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  열기 <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </div>
+
+          {showSafety ? (
+            <div className="mt-4">
+              <SafetyChecker />
+            </div>
+          ) : null}
+        </section>
 
         <footer className="pt-6 text-center text-xs text-slate-400">
           AI 바이탈 매니저 · 본 서비스의 정보는 의료 진단을 대체하지 않습니다.

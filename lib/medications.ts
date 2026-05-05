@@ -296,6 +296,168 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
     ],
     notes: "임의로 중단하지 말고 의사 지시에 따라 천천히 감량하세요.",
   },
+  {
+    name: "센트롬",
+    aliases: ["센트룸", "샌트롬", "centrum", "centrum silver", "센트롬 실버"],
+    category: "종합비타민·미네랄",
+    description:
+      "비타민과 미네랄을 함께 포함한 종합영양제입니다. 제품 구성(철분/칼슘/마그네슘 등)에 따라 흡수에 영향을 받습니다.",
+    defaultFrequency: 1,
+    foodTiming: "with",
+    avoidFoods: [
+      {
+        food: "커피·차 (복용 직후)",
+        reason:
+          "탄닌/카페인 성분이 철분 등 일부 미네랄의 흡수를 떨어뜨릴 수 있습니다. 1~2시간 간격을 권장합니다.",
+        severity: "medium",
+      },
+      {
+        food: "고섬유질 식품 (복용 직후)",
+        reason:
+          "식이섬유가 미네랄 흡수를 방해할 수 있습니다. 위가 불편하지 않다면 식사와 함께, 민감하면 시간 간격을 두세요.",
+        severity: "low",
+      },
+    ],
+    notes:
+      "특정 처방약(갑상선호르몬제, 일부 항생제 등)과는 성분(철분/칼슘) 때문에 '약-약' 상호작용이 더 중요할 수 있어 복용 간격을 약사에게 확인하세요.",
+  },
+  {
+    name: "철분제",
+    aliases: ["iron", "ferrous", "페로바", "훼로", "철분"],
+    category: "영양제·미네랄",
+    description: "철 결핍 예방/치료에 사용됩니다. 흡수에 영향을 받기 쉬운 성분입니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "커피·차",
+        reason: "탄닌 성분이 철분 흡수를 떨어뜨릴 수 있습니다. 1~2시간 간격을 권장합니다.",
+        severity: "high",
+      },
+      {
+        food: "우유·요구르트·치즈 (유제품)",
+        reason: "칼슘이 철분 흡수를 방해할 수 있습니다. 1~2시간 간격을 권장합니다.",
+        severity: "medium",
+      },
+      {
+        food: "고섬유질 식품 (복용 직후)",
+        reason: "식이섬유가 흡수를 저해할 수 있습니다. 시간 간격을 두면 도움이 됩니다.",
+        severity: "low",
+      },
+    ],
+    notes: "속이 불편하면 식후로 옮기되, 흡수 저하 가능성을 고려해 의사·약사 지시를 우선하세요.",
+  },
+  {
+    name: "칼슘제",
+    aliases: ["calcium", "칼슘", "칼슘 보충제"],
+    category: "영양제·미네랄",
+    description: "골 건강을 위해 복용하는 칼슘 보충제입니다. 일부 약물 흡수에 영향을 줄 수 있습니다.",
+    defaultFrequency: 1,
+    foodTiming: "with",
+    avoidFoods: [
+      {
+        food: "커피·카페인 음료 (다량)",
+        reason: "칼슘 배출 증가 등으로 효과가 떨어질 수 있어 과량 섭취는 피하는 편이 좋습니다.",
+        severity: "low",
+      },
+    ],
+    notes: "갑상선호르몬제·일부 항생제 등과는 성분 때문에 복용 간격이 중요할 수 있습니다.",
+  },
+  {
+    name: "마그네슘",
+    aliases: ["magnesium", "마그네슘 보충제", "마그네슘제"],
+    category: "영양제·미네랄",
+    description: "근육 경련, 수면 보조 등 목적으로 복용하는 미네랄 보충제입니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "알코올 (술)",
+        reason: "위장 자극/설사 위험을 높일 수 있어 함께 복용은 피하는 편이 좋습니다.",
+        severity: "low",
+      },
+    ],
+    notes: "속이 예민하면 식후 복용이 편할 수 있습니다.",
+  },
+  {
+    name: "프로바이오틱스",
+    aliases: ["유산균", "probiotics", "lactobacillus", "비피더스"],
+    category: "영양제",
+    description: "장 건강을 위해 복용하는 유산균 제품입니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "뜨거운 음료 (복용 직후)",
+        reason: "고온이 균 생존에 불리할 수 있어 미지근한 물과 함께 복용을 권장합니다.",
+        severity: "low",
+      },
+      {
+        food: "알코올 (술, 다량)",
+        reason: "장 점막 자극으로 효과가 떨어질 수 있습니다.",
+        severity: "low",
+      },
+    ],
+    notes: "항생제와 함께 복용 시에는 보통 2시간 이상 간격을 두는 경우가 많습니다(약사 확인 권장).",
+  },
+  {
+    name: "오메가3",
+    aliases: ["omega-3", "omega3", "오메가-3", "fish oil", "피쉬오일", "EPA", "DHA"],
+    category: "영양제",
+    description: "EPA/DHA가 포함된 생선기름 보충제입니다.",
+    defaultFrequency: 1,
+    foodTiming: "with",
+    avoidFoods: [
+      {
+        food: "알코올 (술, 다량)",
+        reason: "위장 자극/출혈 경향(특히 항응고제 복용자) 우려가 있어 과량 음주는 피하는 편이 좋습니다.",
+        severity: "low",
+      },
+    ],
+    notes: "출혈 위험 약(항응고제/항혈소판제) 복용 중이면 전문의와 상의하세요.",
+  },
+  {
+    name: "비타민 D",
+    aliases: ["vitamin d", "vitaminD", "비타민디", "D3", "cholecalciferol", "콜레칼시페롤"],
+    category: "비타민",
+    description: "지용성 비타민으로, 흡수에 식사가 영향을 줄 수 있습니다.",
+    defaultFrequency: 1,
+    foodTiming: "with",
+    avoidFoods: [],
+    notes: "일반적으로 식사(특히 지방이 포함된 식사)와 함께 복용하면 흡수에 도움이 될 수 있습니다.",
+  },
+  {
+    name: "비타민 C",
+    aliases: ["vitamin c", "vitaminC", "비타민씨", "ascorbic acid", "아스코르빈산"],
+    category: "비타민",
+    description: "수용성 비타민입니다. 위가 예민하면 자극이 있을 수 있습니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "알코올 (술)",
+        reason: "위장 자극이 심해질 수 있어 함께 복용은 피하는 편이 좋습니다.",
+        severity: "low",
+      },
+    ],
+    notes: "속이 쓰리면 식후로 옮겨 보세요.",
+  },
+  {
+    name: "밀크시슬",
+    aliases: ["milk thistle", "실리마린", "silymarin", "밀크 시슬"],
+    category: "영양제",
+    description: "간 건강 보조 목적으로 복용하는 성분(실리마린) 기반의 보충제입니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "알코올 (술)",
+        reason: "간 건강을 위해 복용하는 경우가 많아, 음주는 목적과 상충할 수 있습니다.",
+        severity: "medium",
+      },
+    ],
+    notes: "복용 중인 처방약이 많다면 약사와 상호작용 가능성을 확인하세요.",
+  },
 ];
 
 const normalize = (s: string) => s.replace(/\s+/g, "").toLowerCase();

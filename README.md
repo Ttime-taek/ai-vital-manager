@@ -1,85 +1,73 @@
-# 💊 AI 바이탈 매니저 (AI Vital Manager)
+# AI 바이탈 매니저 (AI Vital Manager)
 
-처방받은 약 이름을 입력하면 **복약 스케줄**과 **함께 먹으면 안 되는 음식**을 자동으로 알려주는 Next.js + Tailwind CSS 기반 대시보드 웹 앱입니다.
+처방받은 약 이름을 입력하면 **복약 스케줄**, **음식 상호작용**, **약물 상호작용(선택)**, **영양/보충제 스태킹 참고(선택)**를 한 화면에서 볼 수 있는 Next.js + Tailwind 기반 웹 앱입니다.
 
-## ✨ 주요 기능
+## 주요 기능
 
-- 🔍 **약물 검색** — 한국어/영어/상품명/일반명 어떤 형태로 입력해도 자동 매칭
-- 📅 **자동 복약 스케줄** — 약별 권장 횟수에 따라 아침/점심/저녁/취침 전 시간대로 자동 분배
-- 🍽 **음식 상호작용 경고** — 자몽주스, 우유, 알코올, 비타민 K 식품 등 약효를 떨어뜨리거나 위험한 음식 자동 식별
-- 🤖 **AI 보강 (선택)** — 내장 DB에 없는 약물은 Google Gemini API로 분석
-- 📊 **요약 통계** — 등록 약물 수, 하루 복용 횟수, 주의 음식 개수를 한눈에
+- 약물 검색 — 로컬 약물 DB 매칭 후, 없으면 Gemini/Cerebras로 보강(선택)
+- 자동 복약 스케줄 — 횟수에 따라 시간대 분배
+- 음식 상호작용 경고 — 자몽주스, 알코올 등
+- 약물 상호작용 점검 — 로컬 규칙, openFDA 경로, (옵션) 상용 API, 주의/금기 시 LLM 설명
+- 30초 안전 판정 — 간단 문진 + 규칙 기반 참고
+- 영양 DB — USDA 검색·fdcId, Open Food Facts 바코드로 프로필 추출 후 보충제 성분 합산·스태킹 경고
 
-## 🏗 기술 스택
+의료 진단·처방을 대체하지 않습니다.
+
+## 기술 스택
 
 | 영역 | 기술 |
 |------|------|
 | 프레임워크 | Next.js 14 (App Router) + TypeScript |
-| 스타일 | Tailwind CSS, Pretendard 한국어 폰트 |
-| 아이콘 | lucide-react |
-| AI 엔진 (선택) | Google Gemini 1.5 Flash |
-| 약물 DB | 로컬 JSON 기반 + AI Fallback |
+| 스타일 | Tailwind CSS |
+| 검증 | Zod |
+| 테스트 | Vitest |
 
-## 🚀 빠른 시작
+## 빠른 시작
 
 ```bash
 npm install
 npm run dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000) 으로 접속하면 됩니다.
-
-## 🔐 환경 변수 설정 (선택)
-
-내장 DB에 등록되지 않은 약물에 대해서도 분석을 받으려면 Gemini API 키를 설정하세요.
-
-1. `.env.example` 파일을 `.env.local`로 복사
-2. `GEMINI_API_KEY`에 [Google AI Studio](https://aistudio.google.com/app/apikey)에서 발급받은 키 입력
+[http://localhost:3000](http://localhost:3000)
 
 ```bash
-# .env.local
-GEMINI_API_KEY=AIzaSy...
-GEMINI_MODEL=gemini-1.5-flash
+npm test
+npm run build
 ```
 
-> ⚠️ **보안**: `.env`, `.env.local` 파일은 절대 Git에 커밋하지 마세요. `.gitignore`에 이미 등록되어 있습니다.
+## 환경 변수
 
-## 📁 프로젝트 구조
+`.env.example`을 `.env.local`로 복사한 뒤 필요한 항목만 채웁니다.
+
+| 변수 | 용도 |
+|------|------|
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | 약물 AI 분석, 상호작용 설명 |
+| `CEREBRAS_API_KEY`, `CEREBRAS_MODEL`, `CEREBRAS_BASE_URL` | Gemini 대체/폴백 |
+| `AI_PROVIDER` | `analyze` 라우트: `auto` / `gemini` / `cerebras` |
+| `INTERACTIONS_LLM_ORDER` | `interactions` 라우트 LLM 순서 (예: `gemini,cerebras`) |
+| `COMMERCIAL_DI_*` | 상용 상호작용 API 연동 시 |
+| `USDA_FDC_API_KEY` | 영양 DB(프로덕션에서 권장) |
+
+실제 키가 들어간 파일은 Git에 커밋하지 마세요.
+
+## 프로젝트 구조 (요약)
 
 ```
-.
-├── app/
-│   ├── api/analyze/route.ts   # 약물 분석 API (DB → AI fallback)
-│   ├── globals.css            # Tailwind + 글로벌 스타일
-│   ├── layout.tsx             # 루트 레이아웃 (Pretendard 폰트)
-│   └── page.tsx               # 메인 대시보드 페이지
-├── components/
-│   ├── Header.tsx
-│   ├── MedicationInput.tsx    # 약물 입력 폼 + 빠른 선택
-│   ├── MedicationCard.tsx     # 개별 약물 정보 카드
-│   ├── ScheduleTimeline.tsx   # 시간대별 복약 타임라인
-│   ├── WarningPanel.tsx       # 음식 상호작용 통합 경고
-│   ├── StatsBar.tsx           # 상단 요약 카드
-│   └── EmptyState.tsx
-├── lib/
-│   ├── medications.ts         # 로컬 약물 DB (13종)
-│   ├── scheduleEngine.ts      # 복용 횟수 → 시간대 분배 로직
-│   └── types.ts               # 타입 정의
-├── package.json
-├── tailwind.config.ts
-├── tsconfig.json
-└── .env.example
+app/
+  page.tsx                 # 대시보드
+  api/analyze/             # 약물 분석
+  api/interactions/        # 약물 상호작용
+  api/safety/              # 안전 판정
+  api/nutrition/product/   # USDA/OFF + 스태킹
+components/                # UI
+lib/                       # 도메인 로직, 외부 API 클라이언트
 ```
 
-## 💊 내장된 약물 DB
+## 면책
 
-타이레놀, 이부프로펜, 아스피린, 와파린, 암로디핀, 심바스타틴, 메트포르민, 오메프라졸, 레보티록신, 시프로플록사신, 아목시실린, 디아제팜, 프레드니솔론 등 13종의 자주 처방되는 약물 정보를 내장하고 있습니다.
+제공 정보는 참고용입니다. 복약·치료 결정은 의사·약사와 상담하세요.
 
-## ⚠️ 면책 조항
-
-본 서비스가 제공하는 모든 정보는 **일반적인 참고용**이며, 의료 진단·처방을 대체할 수 없습니다.  
-실제 복약은 반드시 의사 또는 약사의 지시에 따라 진행하세요.
-
-## 📜 라이선스
+## 라이선스
 
 MIT

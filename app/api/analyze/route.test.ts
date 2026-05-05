@@ -27,6 +27,10 @@ beforeEach(() => {
   vi.restoreAllMocks();
   delete process.env.GEMINI_API_KEY;
   delete process.env.GEMINI_MODEL;
+  delete process.env.CEREBRAS_API_KEY;
+  delete process.env.CEREBRAS_MODEL;
+  delete process.env.CEREBRAS_BASE_URL;
+  delete process.env.AI_PROVIDER;
 });
 
 afterEach(() => {
@@ -68,6 +72,96 @@ describe("/api/analyze", () => {
     expect(json.source).toBe("fallback");
     expect(json.notice).toBeTruthy();
     expect(json.info?.name).toBeTruthy();
+  });
+
+  it("uses Cerebras when only CEREBRAS_API_KEY is set", async () => {
+    process.env.CEREBRAS_API_KEY = "test";
+    process.env.CEREBRAS_MODEL = "any";
+    process.env.CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1";
+    process.env.AI_PROVIDER = "auto";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: any) => {
+        const u = String(url);
+        expect(u).toContain("api.cerebras.ai");
+        return new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    name: "세레브라스약",
+                    aliases: [],
+                    category: "확인 필요",
+                    description: "약사 확인 필요",
+                    defaultFrequency: 2,
+                    foodTiming: "with",
+                    avoidFoods: [],
+                  }),
+                },
+              },
+            ],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }),
+    );
+
+    const res = await POST(makeReq({ query: "cerebrasOnly" }, "4.4.4.4"));
+    expect(res.status).toBe(200);
+    const json = await readJson(res);
+    expect(json.source).toBe("ai");
+    expect(json.provider).toBe("cerebras");
+    expect(json.info?.name).toBe("세레브라스약");
+  });
+
+  it("falls back from Gemini to Cerebras when Gemini fails", async () => {
+    process.env.GEMINI_API_KEY = "test";
+    process.env.CEREBRAS_API_KEY = "test";
+    process.env.CEREBRAS_MODEL = "any";
+    process.env.CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1";
+    process.env.AI_PROVIDER = "auto";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: any) => {
+        const u = String(url);
+        if (u.includes("generativelanguage.googleapis.com")) {
+          return new Response("rate limited", { status: 429 });
+        }
+        if (u.includes("api.cerebras.ai")) {
+          return new Response(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content: JSON.stringify({
+                      name: "대체성공",
+                      aliases: [],
+                      category: "확인 필요",
+                      description: "약사 확인 필요",
+                      defaultFrequency: 2,
+                      foodTiming: "with",
+                      avoidFoods: [],
+                    }),
+                  },
+                },
+              ],
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        return new Response("unknown", { status: 500 });
+      }),
+    );
+
+    const res = await POST(makeReq({ query: "dualProvider" }, "3.3.3.3"));
+    expect(res.status).toBe(200);
+    const json = await readJson(res);
+    expect(json.source).toBe("ai");
+    expect(json.provider).toBe("cerebras");
+    expect(json.info?.name).toBe("대체성공");
   });
 
   it("falls back when Gemini returns invalid JSON", async () => {
