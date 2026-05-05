@@ -20,7 +20,7 @@ export function StatsBar({ medCount, doseCount, warningCount }: StatsBarProps) {
       label: "하루 복용",
       value: doseCount,
       unit: "회",
-      tone: "from-sky-500 to-indigo-600",
+      tone: "from-brand-400 to-brand-600",
     },
     {
       icon: AlertTriangle,
