@@ -2,28 +2,38 @@
   "name": "ai-vital-manager",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.17.0 <23"
+  },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "dev": "node ./node_modules/next/dist/bin/next dev",
+    "build": "node ./node_modules/next/dist/bin/next build",
+    "start": "node ./node_modules/next/dist/bin/next start",
+    "lint": "node ./node_modules/next/dist/bin/next lint",
+    "test": "bun test",
+    "test:vitest": "node ./node_modules/vitest/vitest.mjs run",
+    "test:watch": "vitest",
+    "postinstall": "node ./scripts/prune-swc-stubs.mjs && node ./scripts/check-next-swc.mjs"
+  },
+  "overrides": {
+    "next": "14.2.33",
+    "@next/swc-win32-x64-msvc": "14.2.33"
   },
   "dependencies": {
     "lucide-react": "^0.408.0",
-    "next": "^14.2.35",
+    "next": "14.2.33",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@napi-rs/wasm-runtime": "^1.1.4",
     "@types/node": "^20.19.39",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.35",
+    "eslint-config-next": "14.2.33",
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.3",
