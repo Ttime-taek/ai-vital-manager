@@ -1,12 +1,28 @@
-import { Pill, Clock, AlertTriangle } from "lucide-react";
+import { Pill, Clock, AlertTriangle, ShieldAlert } from "lucide-react";
+import type { InteractionTier } from "@/lib/interactionTypes";
+import { INTERACTION_TIER_LABEL_KO } from "@/lib/interactionLabels";
 
 interface StatsBarProps {
   medCount: number;
   doseCount: number;
   warningCount: number;
+  interactionTier?: InteractionTier | null;
+  interactionLabelKo?: string;
 }
 
-export function StatsBar({ medCount, doseCount, warningCount }: StatsBarProps) {
+const TIER_TONE: Record<InteractionTier, string> = {
+  very_safe: "from-emerald-500 to-emerald-600",
+  caution: "from-amber-500 to-orange-500",
+  contraindicated: "from-rose-500 to-rose-700",
+};
+
+export function StatsBar({
+  medCount,
+  doseCount,
+  warningCount,
+  interactionTier,
+  interactionLabelKo,
+}: StatsBarProps) {
   const items = [
     {
       icon: Pill,
@@ -31,23 +47,35 @@ export function StatsBar({ medCount, doseCount, warningCount }: StatsBarProps) {
     },
   ];
 
+  if (interactionTier) {
+    items.push({
+      icon: ShieldAlert,
+      label: "약물 상호작용",
+      value: interactionLabelKo ?? INTERACTION_TIER_LABEL_KO[interactionTier],
+      unit: "",
+      tone: TIER_TONE[interactionTier],
+    });
+  }
+
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
       {items.map(({ icon: Icon, label, value, unit, tone }) => (
         <div
           key={label}
           className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/70"
         >
           <div
-            className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${tone} text-white`}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${tone} text-white`}
           >
             <Icon className="h-5 w-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-slate-500">{label}</p>
-            <p className="text-xl font-bold text-slate-900">
+            <p className="truncate text-lg font-bold text-slate-900 sm:text-xl">
               {value}
-              <span className="ml-1 text-sm font-medium text-slate-500">{unit}</span>
+              {unit ? (
+                <span className="ml-1 text-sm font-medium text-slate-500">{unit}</span>
+              ) : null}
             </p>
           </div>
         </div>

@@ -1,8 +1,12 @@
 import { Sun, Sunrise, Sunset, Moon, Sparkle } from "lucide-react";
 import type { ScheduleSlot, DoseTime } from "@/lib/types";
+import type { InteractionTier } from "@/lib/interactionTypes";
+import { INTERACTION_TIER_LABEL_KO } from "@/lib/interactionLabels";
 
 interface ScheduleTimelineProps {
   slots: ScheduleSlot[];
+  interactionTier?: InteractionTier | null;
+  interactionLabelKo?: string;
 }
 
 const ICONS: Record<DoseTime, typeof Sun> = {
@@ -13,7 +17,11 @@ const ICONS: Record<DoseTime, typeof Sun> = {
   asNeeded: Sparkle,
 };
 
-export function ScheduleTimeline({ slots }: ScheduleTimelineProps) {
+export function ScheduleTimeline({
+  slots,
+  interactionTier,
+  interactionLabelKo,
+}: ScheduleTimelineProps) {
   const visible = slots.filter(
     (s) => s.time !== "asNeeded" || s.meds.length > 0,
   );
@@ -30,6 +38,20 @@ export function ScheduleTimeline({ slots }: ScheduleTimelineProps) {
           </p>
         </div>
       </div>
+
+      {interactionTier && interactionTier !== "very_safe" ? (
+        <div
+          className={`mb-4 rounded-xl px-4 py-3 text-sm ring-1 ${
+            interactionTier === "contraindicated"
+              ? "bg-rose-50 text-rose-900 ring-rose-200"
+              : "bg-amber-50 text-amber-900 ring-amber-200"
+          }`}
+        >
+          <span className="font-semibold">상호작용 신호: </span>
+          {interactionLabelKo ?? INTERACTION_TIER_LABEL_KO[interactionTier]} — 아래
+          &ldquo;약물 상호작용 체크&rdquo; 결과를 확인하세요.
+        </div>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {visible.map((slot) => {

@@ -51,6 +51,21 @@ function tierToneClass(tone: "emerald" | "amber" | "rose") {
   return "bg-rose-50 text-rose-900 ring-rose-200";
 }
 
+const USDA_DEMO_QUERIES = ["vitamin d", "omega-3", "magnesium", "vitamin c"];
+
+function formatNutritionError(status: number, mode: "usda_search" | "off_barcode", msg: string) {
+  if (status === 502 && mode === "off_barcode") {
+    return "Open Food Facts에서 바코드를 찾지 못했거나 서비스가 일시적으로 불안정합니다. 바코드를 확인하거나 USDA 검색을 이용해 주세요.";
+  }
+  if (status === 502) {
+    return "외부 영양 DB에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  if (status === 429) {
+    return "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  return msg;
+}
+
 function normalizeDrugKey(s: string) {
   return s.replace(/\s+/g, "").toLowerCase();
 }
@@ -153,7 +168,8 @@ export function NutritionProductPanel({ registeredMedicationNames = [] }: Nutrit
       });
       const json = (await res.json()) as ApiOk | ApiErr;
       if (!res.ok || "error" in json) {
-        setError("error" in json ? json.error : "요청에 실패했습니다.");
+        const msg = "error" in json ? json.error : "요청에 실패했습니다.";
+        setError(formatNutritionError(res.status, mode, msg));
         return;
       }
       setResult(json);
@@ -211,6 +227,18 @@ export function NutritionProductPanel({ registeredMedicationNames = [] }: Nutrit
               placeholder="예: vitamin d3 supplement / 센트룸 / 우유"
               className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-inner outline-none transition focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
             />
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {USDA_DEMO_QUERIES.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => setQuery(q)}
+                  className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800 focus-ring"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
           </label>
         ) : (
           <label className="block">

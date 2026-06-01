@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AlertTriangle, CheckCircle2, Loader2, ShieldAlert } from "lucide-react";
 import { INTERACTION_TIER_LABEL_KO } from "@/lib/interactionLabels";
 import type { InteractionTier } from "@/lib/interactionTypes";
@@ -48,7 +56,17 @@ type ApiInteractionResponse = {
 
 interface Props {
   medications: MedicationEntry[];
+  onNotice?: (message: string | null) => void;
+  onResultChange?: (tier: InteractionTier | null, labelKo?: string) => void;
+  onLoadingChange?: (loading: boolean) => void;
 }
+
+export type DrugInteractionCheckerHandle = {
+  runCheck: () => void;
+  scrollIntoView: () => void;
+  canRun: boolean;
+  loading: boolean;
+};
 
 type ManualQuickItem = { name: string };
 
@@ -80,7 +98,12 @@ function makeManualEntry(name: string): MedicationEntry {
   };
 }
 
-export function DrugInteractionChecker({ medications }: Props) {
+export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, Props>(
+  function DrugInteractionChecker(
+    { medications, onNotice, onResultChange, onLoadingChange },
+    ref,
+  ) {
+  const sectionRef = useRef<HTMLElement>(null);
   const [manualItems, setManualItems] = useState<MedicationEntry[]>([]);
   const [manualInput, setManualInput] = useState("");
 
@@ -126,6 +149,17 @@ export function DrugInteractionChecker({ medications }: Props) {
     }
     return out;
   }, [manualItems, medications]);
+
+  // 새 약이 추가되면 상호작용 체크 대상을 자동 선택
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      const next = { ...prev };
+      for (const m of allMedications) {
+        if (next[m.id] === undefined) next[m.id] = true;
+      }
+      return next;
+    });
+  }, [allMedications]);
 
   const selectedNames = useMemo(() => {
     return allMedications.filter((m) => selectedIds[m.id]).map((m) => m.info.name);
@@ -176,19 +210,54 @@ export function DrugInteractionChecker({ medications }: Props) {
         body: JSON.stringify({ drugNames: selectedNames }),
       });
       const data = (await res.json()) as ApiInteractionResponse;
+
+      if (res.status === 429) {
+        const retry = res.headers.get("Retry-After");
+        const msg = retry
+          ? `요청이 너무 많습니다. ${retry}초 후 다시 시도해 주세요.`
+          : "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+        setError(msg);
+        onNotice?.(msg);
+        onResultChange?.(null);
+        return;
+      }
+
       if (!res.ok || data.error) {
         setError(data.error ?? "요청에 실패했습니다.");
+        onResultChange?.(null);
+        onNotice?.(null);
         return;
       }
       setResponse(data);
+      onNotice?.(data.notice?.trim() || null);
+      onResultChange?.(data.tier ?? null, data.tierLabelKo);
     } catch (e) {
       setError(e instanceof Error ? e.message : "네트워크 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
-  }, [selectedNames]);
+  }, [selectedNames, onNotice, onResultChange]);
 
   const canRun = selectedNames.length >= 2 && !loading;
+
+  useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      runCheck: () => {
+        if (selectedNames.length >= 2 && !loading) void runCheck();
+      },
+      scrollIntoView: () => {
+        sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      },
+      canRun,
+      loading,
+    }),
+    [canRun, loading, runCheck, selectedNames.length],
+  );
   const tier = response?.tier;
   const ui = tier ? TIER_UI[tier] : null;
 
@@ -197,7 +266,7 @@ export function DrugInteractionChecker({ medications }: Props) {
       <section className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
         <h2 className="text-base font-semibold text-slate-900">약물 상호작용 체크</h2>
         <p className="mt-2 text-sm text-slate-500">
-          약물을 2개 이상 등록하면, 선택한 조합에 대한 목 데이터 기준 상호작용 신호와(주의/병용 금기 시) 설명을 보여 줍니다.
+          약물을 2개 이상 등록하면 로컬 규칙·openFDA 기반 상호작용 신호를 확인할 수 있습니다.
         </p>
         <p className="mt-3 text-xs text-slate-400">
           현재 등록된 약이 없거나 1개뿐입니다. 위쪽에서 약물을 검색해 추가해 주세요.
@@ -207,7 +276,11 @@ export function DrugInteractionChecker({ medications }: Props) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
+    <section
+      ref={sectionRef}
+      id="drug-interaction-checker"
+      className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70"
+    >
       <div className="mb-3">
         <h2 className="text-base font-semibold text-slate-900">약물 상호작용 체크</h2>
         <p className="mt-1 text-xs text-slate-500">
@@ -240,32 +313,51 @@ export function DrugInteractionChecker({ medications }: Props) {
         </p>
       </div>
 
-      <ul className="space-y-2">
-        {allMedications.map((m) => (
-          <li key={m.id}>
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-sm text-slate-800 hover:bg-brand-50/60">
-              <input
-                type="checkbox"
-                checked={Boolean(selectedIds[m.id])}
-                onChange={() => toggle(m.id)}
-                className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-              />
-              <span className="font-medium">{m.info.name}</span>
-              <span className="text-xs text-slate-400">{m.info.category}</span>
-            </label>
-            {m.id.startsWith("manual:") && (
-              <div className="mt-1 flex justify-end">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-slate-700">체크할 약물</p>
+        <button
+          type="button"
+          onClick={() => {
+            const all: Record<string, boolean> = {};
+            for (const m of allMedications) all[m.id] = true;
+            setSelectedIds(all);
+          }}
+          className="text-xs font-semibold text-brand-700 hover:text-brand-800 focus-ring rounded-lg px-2 py-1"
+        >
+          전체 선택
+        </button>
+      </div>
+
+      <ul className="flex flex-wrap gap-2">
+        {allMedications.map((m) => {
+          const selected = Boolean(selectedIds[m.id]);
+          return (
+            <li key={m.id} className="flex flex-col items-start gap-1">
+              <button
+                type="button"
+                onClick={() => toggle(m.id)}
+                aria-pressed={selected}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition focus-ring ${
+                  selected
+                    ? "border-brand-400 bg-brand-50 text-brand-900 ring-1 ring-brand-200"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                {m.info.name}
+                <span className="text-[10px] font-normal text-slate-400">{m.info.category}</span>
+              </button>
+              {m.id.startsWith("manual:") && (
                 <button
                   type="button"
                   onClick={() => removeManual(m.id)}
-                  className="text-xs font-semibold text-slate-500 hover:text-rose-700 focus-ring rounded-lg px-1 py-0.5"
+                  className="text-[11px] font-semibold text-slate-500 hover:text-rose-700 focus-ring rounded-lg px-1"
                 >
                   목록에서 제거
                 </button>
-              </div>
-            )}
-          </li>
-        ))}
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -384,4 +476,5 @@ export function DrugInteractionChecker({ medications }: Props) {
       )}
     </section>
   );
-}
+},
+);

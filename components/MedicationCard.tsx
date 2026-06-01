@@ -37,9 +37,11 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
   const sourceTag =
     source === "ai"
       ? { icon: Sparkles, label: "AI 분석", className: "bg-violet-50 text-violet-700 ring-violet-200" }
-      : source === "database"
-        ? { icon: Database, label: "내장 DB", className: "bg-brand-50 text-brand-700 ring-brand-200" }
-        : { icon: AlertTriangle, label: "정보 부족", className: "bg-slate-100 text-slate-600 ring-slate-200" };
+      : source === "uncertain"
+        ? { icon: AlertTriangle, label: "확인 필요", className: "bg-amber-50 text-amber-800 ring-amber-200" }
+        : source === "database"
+          ? { icon: Database, label: "내장 DB", className: "bg-brand-50 text-brand-700 ring-brand-200" }
+          : { icon: AlertTriangle, label: "정보 부족", className: "bg-slate-100 text-slate-600 ring-slate-200" };
 
   const SourceIcon = sourceTag.icon;
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronDown, ChevronUp, Loader2, RotateCcw, Shield } from "lucide-react";
+import { AiStatusBanner } from "@/components/AiStatusBanner";
 import { Header } from "@/components/Header";
 import { MedicationInput } from "@/components/MedicationInput";
 import { MedicationCard } from "@/components/MedicationCard";
@@ -9,27 +10,45 @@ import { ScheduleTimeline } from "@/components/ScheduleTimeline";
 import { WarningPanel } from "@/components/WarningPanel";
 import { StatsBar } from "@/components/StatsBar";
 import { EmptyState } from "@/components/EmptyState";
-import { DrugInteractionChecker } from "@/components/DrugInteractionChecker";
+import { DrugInteractionChecker, type DrugInteractionCheckerHandle } from "@/components/DrugInteractionChecker";
 import { NutritionProductPanel } from "@/components/NutritionProductPanel";
 import { SafetyChecker } from "@/components/SafetyChecker";
 import { buildSchedule, getSlotsForFrequency } from "@/lib/scheduleEngine";
+import { loadStoredMeds, saveStoredMeds } from "@/lib/medsStorage";
+import type { InteractionTier } from "@/lib/interactionTypes";
 import type { MedicationEntry, MedicationInfo } from "@/lib/types";
 
 interface AnalyzeResponse {
   info: MedicationInfo;
-  source: "database" | "ai" | "fallback";
+  source: "database" | "ai" | "fallback" | "uncertain";
   notice?: string;
   error?: string;
 }
 
 export default function HomePage() {
   const [meds, setMeds] = useState<MedicationEntry[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSafety, setShowSafety] = useState(false);
+  const [aiNotice, setAiNotice] = useState<string | null>(null);
+  const [interactionTier, setInteractionTier] = useState<InteractionTier | null>(null);
+  const [interactionLabelKo, setInteractionLabelKo] = useState<string | undefined>();
+  const [interactionLoading, setInteractionLoading] = useState(false);
+  const interactionRef = useRef<DrugInteractionCheckerHandle>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "info" | "error";
   } | null>(null);
+
+  useEffect(() => {
+    setMeds(loadStoredMeds());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveStoredMeds(meds);
+  }, [meds, hydrated]);
 
   const showToast = (
     message: string,
@@ -65,6 +84,17 @@ export default function HomePage() {
         });
         const data = (await res.json()) as AnalyzeResponse;
 
+        if (res.status === 429) {
+          const retry = res.headers.get("Retry-After");
+          showToast(
+            retry
+              ? `요청이 너무 많습니다. ${retry}초 후 다시 시도해 주세요.`
+              : "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+            "error",
+          );
+          return;
+        }
+
         if (!res.ok || data.error) {
           showToast(data.error ?? "분석에 실패했습니다.", "error");
           return;
@@ -79,7 +109,13 @@ export default function HomePage() {
         setMeds((prev) => [entry, ...prev]);
 
         if (data.notice) {
+          setAiNotice(data.notice);
           showToast(data.notice, "info");
+        } else if (data.source === "uncertain" || data.source === "fallback") {
+          showToast(
+            `${data.info.name}을(를) 추가했습니다. 약사·의사 확인을 권장합니다.`,
+            "info",
+          );
         } else if (data.source === "ai") {
           showToast(`AI가 분석한 정보로 ${data.info.name}을(를) 추가했습니다.`, "success");
         } else {
@@ -104,8 +140,23 @@ export default function HomePage() {
     const ok = window.confirm("등록된 약물을 모두 초기화할까요?");
     if (!ok) return;
     setMeds([]);
+    setInteractionTier(null);
+    setInteractionLabelKo(undefined);
+    setAiNotice(null);
     showToast("초기화되었습니다.", "success");
   }, [meds.length]);
+
+  const handleInteractionNotice = useCallback((message: string | null) => {
+    if (message) setAiNotice(message);
+  }, []);
+
+  const handleInteractionResult = useCallback(
+    (tier: InteractionTier | null, labelKo?: string) => {
+      setInteractionTier(tier);
+      setInteractionLabelKo(labelKo);
+    },
+    [],
+  );
 
   const schedule = useMemo(() => buildSchedule(meds), [meds]);
 
@@ -126,16 +177,28 @@ export default function HomePage() {
     };
   }, [meds]);
 
+  const showMobileSticky = meds.length >= 2;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50/30">
       <Header />
 
-      <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
+      <main
+        className={`mx-auto max-w-6xl space-y-6 px-6 py-8 ${showMobileSticky ? "pb-28 md:pb-8" : ""}`}
+      >
+        <AiStatusBanner message={aiNotice} onDismiss={() => setAiNotice(null)} />
+
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="space-y-3">
               <MedicationInput onAdd={handleAdd} loading={loading} />
-              <DrugInteractionChecker medications={meds} />
+              <DrugInteractionChecker
+                ref={interactionRef}
+                medications={meds}
+                onNotice={handleInteractionNotice}
+                onResultChange={handleInteractionResult}
+                onLoadingChange={setInteractionLoading}
+              />
               <NutritionProductPanel
                 registeredMedicationNames={meds.map((m) => m.info.name)}
               />
@@ -157,11 +220,17 @@ export default function HomePage() {
               medCount={stats.medCount}
               doseCount={stats.doseCount}
               warningCount={stats.warningCount}
+              interactionTier={interactionTier}
+              interactionLabelKo={interactionLabelKo}
             />
           </div>
         </div>
 
-        <ScheduleTimeline slots={schedule} />
+        <ScheduleTimeline
+          slots={schedule}
+          interactionTier={interactionTier}
+          interactionLabelKo={interactionLabelKo}
+        />
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-3 lg:col-span-2">
@@ -193,7 +262,7 @@ export default function HomePage() {
             <div>
               <h2 className="text-base font-semibold text-slate-900">30초 안전 판정 (선택)</h2>
               <p className="mt-1 text-xs text-slate-500">
-                필요할 때만 열어서 빠르게 안전 체크를 진행하세요.
+                필요할 때만 열어서 빠르게 안전 체크를 진행하세요. 예: 와파린, 오메가3
               </p>
             </div>
             <button
@@ -216,7 +285,7 @@ export default function HomePage() {
 
           {showSafety ? (
             <div className="mt-4">
-              <SafetyChecker />
+              <SafetyChecker embedded />
             </div>
           ) : null}
         </section>
@@ -226,9 +295,32 @@ export default function HomePage() {
         </footer>
       </main>
 
+      {showMobileSticky ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-soft backdrop-blur md:hidden">
+          <button
+            type="button"
+            disabled={interactionLoading}
+            onClick={() => {
+              interactionRef.current?.scrollIntoView();
+              window.setTimeout(() => interactionRef.current?.runCheck(), 350);
+            }}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {interactionLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Shield className="h-4 w-4" />
+            )}
+            상호작용 확인 ({meds.length}개)
+          </button>
+        </div>
+      ) : null}
+
       {toast && (
         <div
-          className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-fade-in-up"
+          className={`fixed left-1/2 z-50 -translate-x-1/2 animate-fade-in-up ${
+            showMobileSticky ? "bottom-24 md:bottom-6" : "bottom-6"
+          }`}
           role="status"
           aria-live="polite"
           aria-atomic="true"

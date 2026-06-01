@@ -57,7 +57,7 @@ type CandidatePick = {
   kind: ItemKind;
 };
 
-export function SafetyChecker() {
+export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
   const [persona, setPersona] = useState<Persona>("D");
   const [pregnantOrLactating, setPregnantOrLactating] = useState<YesNoUnknown>("unknown");
   const [hasPrescriptionMeds, setHasPrescriptionMeds] = useState<YesNoUnknown>("unknown");
@@ -122,6 +122,15 @@ export function SafetyChecker() {
 
   const canSubmit = items.length > 0 && !loading && !paidLoading;
 
+  useEffect(() => {
+    if (!needsPick) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setNeedsPick(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [needsPick]);
+
   const verdictUi = result ? VERDICT_UI[result.verdict] : null;
 
   const candidateModal = useMemo(() => {
@@ -130,10 +139,20 @@ export function SafetyChecker() {
     if (!norm || norm.candidates.length === 0) return null;
 
     return (
-      <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/30 p-4 sm:items-center">
+      <div
+        className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/30 p-4 sm:items-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="safety-pick-title"
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setNeedsPick(null);
+        }}
+      >
         <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200/70">
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-slate-900">후보 선택</h3>
+            <h3 id="safety-pick-title" className="text-sm font-semibold text-slate-900">
+              후보 선택
+            </h3>
             <p className="mt-1 text-xs text-slate-500">
               입력한 <span className="font-medium text-slate-700">“{needsPick}”</span>에 대해 가장 가까운 항목을 선택해 주세요.
             </p>
@@ -177,15 +196,23 @@ export function SafetyChecker() {
   }, [result, needsPick]);
 
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-semibold text-slate-900">30초 안전 판정</h2>
-          <p className="text-xs text-slate-500">
-            임신/수유, 복용 중인 약, 영양제 조합을 입력하면 OK/주의/금지/정보 부족으로 빠르게 판단합니다.
-          </p>
+    <section
+      className={
+        embedded
+          ? ""
+          : "rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70"
+      }
+    >
+      {!embedded ? (
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">30초 안전 판정</h2>
+            <p className="text-xs text-slate-500">
+              임신/수유, 복용 중인 약, 영양제 조합을 입력하면 OK/주의/금지/정보 부족으로 빠르게 판단합니다.
+            </p>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="block text-xs font-medium text-slate-600">

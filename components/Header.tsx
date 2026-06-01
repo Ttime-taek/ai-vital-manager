@@ -21,6 +21,10 @@ export function Header() {
           <span className="h-2 w-2 rounded-full bg-brand-500 animate-pulse" />
           베타 v0.1
         </div>
+        <div className="flex items-center gap-2 rounded-full bg-brand-50 px-2 py-1 text-[10px] font-medium text-brand-700 ring-1 ring-brand-100 sm:hidden">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
+          베타
+        </div>
       </div>
     </header>
   );
