@@ -3,6 +3,8 @@ import { findMedication } from "@/lib/medications";
 import type { MedicationInfo } from "@/lib/types";
 import { coerceMedicationInfoFromUnknown } from "@/lib/medicationSchema";
 import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
+import { resolveGeminiModel } from "@/lib/geminiModel";
+import { isLowConfidenceMedicationInfo } from "@/lib/medicationConfidence";
 
 export const runtime = "nodejs";
 
@@ -132,7 +134,22 @@ export async function POST(req: NextRequest) {
           ? await analyzeWithGemini(query, process.env.GEMINI_API_KEY!)
           : await analyzeWithCerebras(query);
 
-      return NextResponse.json({ info, source: "ai", provider });
+      const lowConf = isLowConfidenceMedicationInfo(info, query);
+      let notice: string | undefined;
+      if (attemptErrors.length > 0) {
+        notice =
+          "Gemini 한도 또는 오류로 대체 AI 결과를 사용했습니다. 처방전·약사 안내를 우선하세요.";
+      } else if (lowConf) {
+        notice =
+          "AI가 약물을 확실히 식별하지 못했습니다. 처방전·약사 안내를 우선하세요.";
+      }
+
+      return NextResponse.json({
+        info,
+        source: lowConf ? "uncertain" : "ai",
+        provider,
+        ...(notice ? { notice } : {}),
+      });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       attemptErrors.push(`${provider}: ${msg}`);
@@ -155,7 +172,8 @@ async function analyzeWithGemini(
   query: string,
   apiKey: string,
 ): Promise<MedicationInfo> {
-  const model = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
+  const preferred = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+  const model = await resolveGeminiModel({ apiKey, preferred });
 
   const systemPrompt = `당신은 임상 약사를 보조하는 전문 약물 정보 어시스턴트입니다.
 사용자가 입력한 약물 이름에 대해 다음 항목을 JSON으로 반환합니다.
