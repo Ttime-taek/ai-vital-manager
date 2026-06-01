@@ -24,6 +24,22 @@
 
 ## 빠른 시작
 
+### Windows (권장)
+
+Next.js 14는 **Node 20 LTS**에서 가장 안정적입니다. `fix-deps.bat`가 `%LOCALAPPDATA%\ai-vital-manager\node-v20`에 Node 20을 설치합니다(프로젝트 밖 — 파일 감시 충돌 방지).
+
+1. `fix-deps.bat` — 최초 1회(또는 의존성 꼬였을 때)
+2. `start.bat` — 개발 서버 실행 (창을 닫지 마세요). `Ready` 후 바로 꺼지면 `start-live.bat` 또는 포트 `3001` 시도.
+3. 브라우저에서 [http://localhost:3000](http://localhost:3000)
+
+`Ready` 직후 `Compiling /`에서 종료되면 `next`와 `@next/swc-win32-x64-msvc` 버전이 어긋난 경우가 많습니다. `start.bat`가 `check-next-swc`로 막으면 **`quick-fix-swc.bat`** (SWC만 맞춤) 또는 **`fix-deps.bat`** (전체 재설치)를 실행하세요. `npm warn cleanup ... EPERM`이 나오면 `fix-deps.bat`가 자동으로 `node_modules`를 비운 뒤 재시도합니다.
+
+문제가 계속되면 `diagnose-dev.bat` 실행 후 `.gstack\dev-live.log` 내용을 확인하세요.
+
+PowerShell에서는 `npm` 대신 **`npm.cmd`** 를 쓰거나 `start.bat`를 사용하세요. `node --version`처럼 명령 이름 없이 `--version`만 입력하면 오류가 납니다.
+
+### macOS / Linux
+
 ```bash
 npm install
 npm run dev
