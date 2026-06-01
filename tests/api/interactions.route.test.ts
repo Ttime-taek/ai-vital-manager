@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { POST } from "./route";
+import { POST } from "@/app/api/interactions/route";
 
 function makeReq(body: unknown) {
   const req = new Request("http://localhost/api/interactions", {
@@ -19,19 +19,17 @@ describe("/api/interactions", () => {
   const origKey = process.env.GEMINI_API_KEY;
   const origCerebras = process.env.CEREBRAS_API_KEY;
   const origOrder = process.env.INTERACTIONS_LLM_ORDER;
+  const origFetch = globalThis.fetch;
 
   beforeEach(() => {
     delete process.env.GEMINI_API_KEY;
     delete process.env.CEREBRAS_API_KEY;
     delete process.env.INTERACTIONS_LLM_ORDER;
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response("{}", { status: 500 })),
-    );
+    globalThis.fetch = vi.fn(async () => new Response("{}", { status: 500 })) as typeof fetch;
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    globalThis.fetch = origFetch;
     if (origKey !== undefined) process.env.GEMINI_API_KEY = origKey;
     else delete process.env.GEMINI_API_KEY;
     if (origCerebras !== undefined) process.env.CEREBRAS_API_KEY = origCerebras;
@@ -87,7 +85,7 @@ describe("/api/interactions", () => {
       }
       return new Response("{}", { status: 500 });
     });
-    vi.stubGlobal("fetch", fetchMock);
+    globalThis.fetch = fetchMock as typeof fetch;
 
     const res = await POST(makeReq({ drugNames: ["와파린", "아스피린"] }));
     expect(res.status).toBe(200);
@@ -120,7 +118,7 @@ describe("/api/interactions", () => {
       }
       return new Response("{}", { status: 500 });
     });
-    vi.stubGlobal("fetch", fetchMock);
+    globalThis.fetch = fetchMock as typeof fetch;
 
     const res = await POST(makeReq({ drugNames: ["와파린", "아스피린"] }));
     expect(res.status).toBe(200);
@@ -148,7 +146,7 @@ describe("/api/interactions", () => {
       }
       return new Response("{}", { status: 500 });
     });
-    vi.stubGlobal("fetch", fetchMock);
+    globalThis.fetch = fetchMock as typeof fetch;
 
     const res = await POST(makeReq({ drugNames: ["와파린", "아스피린"] }));
     expect(res.status).toBe(200);

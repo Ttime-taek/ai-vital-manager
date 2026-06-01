@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
-    include: ["**/*.test.ts", "**/*.test.tsx"],
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
     reporters: ["default"],
   },
 });

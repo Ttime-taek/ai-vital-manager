@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { POST } from "./route";
+import { POST } from "@/app/api/safety/route";
 
 function makeReq(body: unknown) {
   const req = new Request("http://localhost/api/safety", {
