@@ -31,6 +31,9 @@ beforeEach(() => {
   delete process.env.CEREBRAS_MODEL;
   delete process.env.CEREBRAS_BASE_URL;
   delete process.env.AI_PROVIDER;
+  delete process.env.MEDICATION_WEB_SEARCH;
+  delete process.env.SERPER_API_KEY;
+  delete process.env.TAVILY_API_KEY;
 });
 
 const origFetch = globalThis.fetch;
@@ -67,6 +70,14 @@ describe("/api/analyze", () => {
     expect(last!.headers.get("Retry-After")).toBeTruthy();
   });
 
+  it("returns local DB for known drug when AI keys missing", async () => {
+    const res = await POST(makeReq({ query: "타이레놀" }, "8.8.8.8"));
+    expect(res.status).toBe(200);
+    const json = await readJson(res);
+    expect(json.source).toBe("database");
+    expect(json.info?.name).toBe("아세트아미노펜");
+  });
+
   it("returns fallback when GEMINI_API_KEY missing", async () => {
     const res = await POST(makeReq({ query: "완전처음보는약" }));
     expect(res.status).toBe(200);
@@ -90,6 +101,7 @@ describe("/api/analyze", () => {
     process.env.CEREBRAS_MODEL = "any";
     process.env.CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1";
     process.env.AI_PROVIDER = "auto";
+    process.env.MEDICATION_WEB_SEARCH = "0";
 
     globalThis.fetch = vi.fn(async (url: any) => {
         const u = String(url);
@@ -131,6 +143,7 @@ describe("/api/analyze", () => {
     process.env.CEREBRAS_MODEL = "any";
     process.env.CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1";
     process.env.AI_PROVIDER = "auto";
+    process.env.MEDICATION_WEB_SEARCH = "0";
 
     globalThis.fetch = vi.fn(async (url: any) => {
         const u = String(url);
@@ -173,6 +186,7 @@ describe("/api/analyze", () => {
 
   it("falls back when Gemini returns invalid JSON", async () => {
     process.env.GEMINI_API_KEY = "test";
+    process.env.MEDICATION_WEB_SEARCH = "0";
     globalThis.fetch = vi.fn(async () => {
         return new Response(
           JSON.stringify({
@@ -191,6 +205,7 @@ describe("/api/analyze", () => {
 
   it("coerces schema-violating Gemini JSON into safe MedicationInfo", async () => {
     process.env.GEMINI_API_KEY = "test";
+    process.env.MEDICATION_WEB_SEARCH = "0";
     globalThis.fetch = vi.fn(async () => {
         return new Response(
           JSON.stringify({
@@ -234,6 +249,7 @@ describe("/api/analyze", () => {
     "falls back on Gemini timeout (AbortError)",
     async () => {
     process.env.GEMINI_API_KEY = "test";
+    process.env.MEDICATION_WEB_SEARCH = "0";
     vi.useFakeTimers();
     globalThis.fetch = vi.fn(async (_url: any, init: any) => {
         const signal: AbortSignal | undefined = init?.signal;

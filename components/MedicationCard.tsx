@@ -56,9 +56,19 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
   const frequency = entry.customFrequency ?? info.defaultFrequency;
 
   const sourceTag =
-    source === "ai"
-      ? { icon: Sparkles, label: "AI 분석", className: "bg-violet-50 text-violet-700 ring-violet-200" }
-      : source === "uncertain"
+    source === "ai" || source === "ai_web"
+      ? {
+          icon: Sparkles,
+          label: source === "ai_web" ? "웹·AI" : "AI 분석",
+          className: "bg-violet-50 text-violet-700 ring-violet-200",
+        }
+      : source === "database_enriched"
+        ? {
+            icon: Sparkles,
+            label: "AI 보강",
+            className: "bg-teal-50 text-teal-800 ring-teal-200",
+          }
+        : source === "uncertain"
         ? { icon: AlertTriangle, label: "확인 필요", className: "bg-amber-50 text-amber-800 ring-amber-200" }
         : source === "database"
           ? { icon: Database, label: "내장 DB", className: "bg-brand-50 text-brand-700 ring-brand-200" }

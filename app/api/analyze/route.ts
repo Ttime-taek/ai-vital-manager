@@ -4,7 +4,6 @@ import type { MedicationInfo } from "@/lib/types";
 import { coerceMedicationInfoFromUnknown } from "@/lib/medicationSchema";
 import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
 import { resolveGeminiModel } from "@/lib/geminiModel";
-import { isLowConfidenceMedicationInfo } from "@/lib/medicationConfidence";
 import {
   getCerebrasApiKey,
   getGeminiApiKey,
@@ -12,6 +11,16 @@ import {
   hasGeminiConfigured,
   hasPlaceholderApiKeys,
 } from "@/lib/aiEnv";
+import { buildMedicationSystemPrompt } from "@/lib/analyzePrompts";
+import {
+  buildAnalyzeUserPrompt,
+  resolveAnalyzeOutcome,
+} from "@/lib/medicationEnrichment";
+import {
+  isMedicationWebSearchEnabled,
+  searchMedicationWebContext,
+  type MedicationWebContext,
+} from "@/lib/medicationWebSearch";
 
 export const runtime = "nodejs";
 
@@ -19,8 +28,8 @@ const LIMITS = {
   queryMinLen: 1,
   queryMaxLen: 80,
   requestsPerMinutePerIp: 20,
-  geminiTimeoutMs: 10_000,
-  cerebrasTimeoutMs: 10_000,
+  geminiTimeoutMs: 15_000,
+  cerebrasTimeoutMs: 15_000,
 };
 
 type AiProvider = "gemini" | "cerebras" | "auto";
@@ -36,7 +45,7 @@ const isRateLimited = createIpMinuteLimiter(LIMITS.requestsPerMinutePerIp);
 
 function normalizeQuery(input: string): string {
   return input
-    .replace(/[\u0000-\u001F\u007F]/g, "") // control chars
+    .replace(/[\u0000-\u001F\u007F]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -45,8 +54,6 @@ function validateQuery(q: string): { ok: true; value: string } | { ok: false; er
   if (q.length < LIMITS.queryMinLen) return { ok: false, error: "약물 이름을 입력해주세요." };
   if (q.length > LIMITS.queryMaxLen) return { ok: false, error: `약물 이름은 ${LIMITS.queryMaxLen}자 이내로 입력해주세요.` };
 
-  // Allow: Korean, English, numbers, spaces, hyphen, dot, parentheses, plus, slash, percent.
-  // (We keep this permissive enough for common drug names while rejecting obvious garbage.)
   const allowed = /^[0-9A-Za-z\u3131-\u318E\uAC00-\uD7A3 .()+/%-]+$/u;
   if (!allowed.test(q)) {
     return { ok: false, error: "약물 이름에 허용되지 않는 문자가 포함되어 있습니다." };
@@ -90,28 +97,6 @@ const FALLBACK_INFO = (name: string): MedicationInfo => ({
     "AI 또는 로컬 DB에서 정보를 찾지 못했습니다. 처방전과 약국 안내문을 우선 따르세요.",
 });
 
-const AI_MEDICATION_JSON_SCHEMA = `{
-  "name": string,
-  "aliases": string[],
-  "category": string,
-  "description": string,
-  "defaultFrequency": 1 | 2 | 3 | 4,
-  "foodTiming": "before" | "with" | "after" | "any",
-  "avoidFoods": [
-    { "food": string, "reason": string, "severity": "high" | "medium" | "low" }
-  ],
-  "recommendedFoods": [
-    { "food": string, "reason": string, "severity": "high" | "medium" | "low" }
-  ],
-  "notes": string
-}`;
-
-const AI_MEDICATION_RULES = `- 사용자가 한국어/영어/상품명/일반명 어떤 것을 입력해도 표준 약물로 매칭하여 응답.
-- avoidFoods: 식이 상호작용·피해야 할 음식 (자몽, 우유, 알코올, 비타민K 급변 등). 확실한 항목만.
-- recommendedFoods: 함께 섭취·식습관으로 도움이 되는 항목 (식사와 함께, 공복 복용 후 식사, 저지방 단백질 등). severity는 high=적극 권장.
-- 의학적 확신이 없으면 추측하지 말고 description/notes에 "약사 확인 필요" 명시.
-- 한국 사용자를 가정하여 한국어로 작성.`;
-
 interface AnalyzeBody {
   query: string;
 }
@@ -121,19 +106,13 @@ export async function POST(req: NextRequest) {
   try {
     body = (await req.json()) as AnalyzeBody;
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const normalized = normalizeQuery(body.query ?? "");
   const validated = validateQuery(normalized);
   if (!validated.ok) {
-    return NextResponse.json(
-      { error: validated.error },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: validated.error }, { status: 400 });
   }
   const query = validated.value;
 
@@ -150,8 +129,34 @@ export async function POST(req: NextRequest) {
   }
 
   const local = findMedication(query);
-  if (local) {
-    return NextResponse.json({ info: local, source: "database" });
+  const aiConfigured = hasGeminiConfigured() || hasCerebrasConfigured();
+
+  if (!aiConfigured) {
+    if (local) {
+      return NextResponse.json({ info: local, source: "database" });
+    }
+    let notice: string;
+    if (hasPlaceholderApiKeys()) {
+      notice =
+        "API 키 값이 잘못 입력된 것 같습니다. Vercel Environment Variables에서 GEMINI_API_KEY / CEREBRAS_API_KEY에 실제 키를 넣어 주세요.";
+    } else {
+      notice =
+        "AI API 키가 설정되어 있지 않아 웹 검색·AI 보강을 수행하지 못했습니다.";
+    }
+    return NextResponse.json({
+      info: FALLBACK_INFO(query),
+      source: "fallback",
+      notice,
+    });
+  }
+
+  let web: MedicationWebContext | null = null;
+  if (isMedicationWebSearchEnabled()) {
+    try {
+      web = await searchMedicationWebContext(query);
+    } catch (err) {
+      console.error("[analyze] web search error:", err);
+    }
   }
 
   const order = getProviderOrder();
@@ -162,26 +167,30 @@ export async function POST(req: NextRequest) {
     if (provider === "cerebras" && !hasCerebrasConfigured()) continue;
 
     try {
-      const info =
+      const ai =
         provider === "gemini"
-          ? await analyzeWithGemini(query, getGeminiApiKey()!)
-          : await analyzeWithCerebras(query);
+          ? await analyzeWithGemini(query, getGeminiApiKey()!, local, web)
+          : await analyzeWithCerebras(query, local, web);
 
-      const lowConf = isLowConfidenceMedicationInfo(info, query);
-      let notice: string | undefined;
-      if (attemptErrors.length > 0) {
-        notice =
-          "Gemini 한도 또는 오류로 대체 AI 결과를 사용했습니다. 처방전·약사 안내를 우선하세요.";
-      } else if (lowConf) {
-        notice =
-          "AI가 약물을 확실히 식별하지 못했습니다. 처방전·약사 안내를 우선하세요.";
-      }
+      const providerFallbackNotice =
+        attemptErrors.length > 0
+          ? "Gemini 한도 또는 오류로 대체 AI 결과를 사용했습니다. 처방전·약사 안내를 우선하세요."
+          : undefined;
+
+      const outcome = resolveAnalyzeOutcome({
+        query,
+        local,
+        ai,
+        web,
+        providerFallbackNotice,
+      });
 
       return NextResponse.json({
-        info,
-        source: lowConf ? "uncertain" : "ai",
+        info: outcome.info,
+        source: outcome.source,
         provider,
-        ...(notice ? { notice } : {}),
+        webSearchUsed: Boolean(web && web.snippets.length > 0),
+        ...(outcome.notice ? { notice: outcome.notice } : {}),
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -190,17 +199,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const configured = hasGeminiConfigured() || hasCerebrasConfigured();
+  if (local) {
+    return NextResponse.json({
+      info: local,
+      source: "database",
+      notice:
+        "AI·웹 보강 중 오류가 발생해 로컬 DB 정보를 사용했습니다. 처방전·약사 안내를 우선하세요.",
+      debug: process.env.NODE_ENV === "development" ? attemptErrors : undefined,
+    });
+  }
+
   let notice: string;
   if (hasPlaceholderApiKeys()) {
     notice =
       "API 키 값이 잘못 입력된 것 같습니다. Vercel Environment Variables에서 GEMINI_API_KEY / CEREBRAS_API_KEY에 .env.local과 동일한 실제 키를 넣어 주세요.";
-  } else if (configured) {
-    notice =
-      "AI 분석 중 오류가 발생하여 일반 안내로 대체했습니다. 정확한 정보는 약사·의사에게 확인하세요.";
   } else {
     notice =
-      "AI API 키가 설정되어 있지 않아 분석을 수행하지 못했습니다. (.env.local에 GEMINI_API_KEY 또는 CEREBRAS_API_KEY를 추가하세요)";
+      "웹 검색·AI 분석 중 오류가 발생하여 일반 안내로 대체했습니다. 정확한 정보는 약사·의사에게 확인하세요.";
   }
   return NextResponse.json({
     info: FALLBACK_INFO(query),
@@ -213,21 +228,13 @@ export async function POST(req: NextRequest) {
 async function analyzeWithGemini(
   query: string,
   apiKey: string,
+  localBaseline: MedicationInfo | null,
+  web: MedicationWebContext | null,
 ): Promise<MedicationInfo> {
   const preferred = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
   const model = await resolveGeminiModel({ apiKey, preferred });
-
-  const systemPrompt = `당신은 임상 약사를 보조하는 전문 약물 정보 어시스턴트입니다.
-사용자가 입력한 약물 이름에 대해 다음 항목을 JSON으로 반환합니다.
-반드시 유효한 JSON만 출력하세요. 마크다운, 주석, 추가 설명 금지.
-
-스키마:
-${AI_MEDICATION_JSON_SCHEMA}
-
-규칙:
-${AI_MEDICATION_RULES}`;
-
-  const userPrompt = `약물명: ${query}`;
+  const systemPrompt = buildMedicationSystemPrompt();
+  const userPrompt = buildAnalyzeUserPrompt(query, web, localBaseline);
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
@@ -272,29 +279,22 @@ ${AI_MEDICATION_RULES}`;
     throw new Error("Gemini returned invalid JSON");
   }
 
-  const coerced = coerceMedicationInfoFromUnknown(parsedUnknown, query);
-  return coerced;
+  return coerceMedicationInfoFromUnknown(parsedUnknown, query);
 }
 
-async function analyzeWithCerebras(query: string): Promise<MedicationInfo> {
+async function analyzeWithCerebras(
+  query: string,
+  localBaseline: MedicationInfo | null,
+  web: MedicationWebContext | null,
+): Promise<MedicationInfo> {
   const apiKey = getCerebrasApiKey();
   if (!apiKey) throw new Error("CEREBRAS_API_KEY missing");
 
   const model = process.env.CEREBRAS_MODEL || "llama3.1-70b";
   const base = (process.env.CEREBRAS_BASE_URL || "https://api.cerebras.ai/v1").replace(/\/+$/, "");
   const url = `${base}/chat/completions`;
-
-  const systemPrompt = `당신은 임상 약사를 보조하는 전문 약물 정보 어시스턴트입니다.
-사용자가 입력한 약물 이름에 대해 다음 항목을 JSON으로 반환합니다.
-반드시 유효한 JSON만 출력하세요. 마크다운, 주석, 추가 설명 금지.
-
-스키마:
-${AI_MEDICATION_JSON_SCHEMA}
-
-규칙:
-${AI_MEDICATION_RULES}`;
-
-  const userPrompt = `약물명: ${query}`;
+  const systemPrompt = buildMedicationSystemPrompt();
+  const userPrompt = buildAnalyzeUserPrompt(query, web, localBaseline);
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), LIMITS.cerebrasTimeoutMs);
@@ -309,7 +309,7 @@ ${AI_MEDICATION_RULES}`;
     body: JSON.stringify({
       model,
       temperature: 0.2,
-      max_tokens: 800,
+      max_tokens: 1200,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },

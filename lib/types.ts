@@ -27,7 +27,7 @@ export interface MedicationEntry {
   id: string;
   info: MedicationInfo;
   customFrequency?: 1 | 2 | 3 | 4;
-  source: "database" | "ai" | "fallback" | "uncertain";
+  source: "database" | "database_enriched" | "ai" | "ai_web" | "fallback" | "uncertain";
   addedAt: number;
 }
 

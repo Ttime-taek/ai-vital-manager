@@ -19,7 +19,7 @@ import type { MedicationEntry, MedicationInfo } from "@/lib/types";
 
 interface AnalyzeResponse {
   info: MedicationInfo;
-  source: "database" | "ai" | "fallback" | "uncertain";
+  source: "database" | "database_enriched" | "ai" | "ai_web" | "fallback" | "uncertain";
   notice?: string;
   error?: string;
 }
@@ -115,8 +115,18 @@ export default function HomePage() {
             `${data.info.name}을(를) 추가했습니다. 약사·의사 확인을 권장합니다.`,
             "info",
           );
-        } else if (data.source === "ai") {
-          showToast(`AI가 분석한 정보로 ${data.info.name}을(를) 추가했습니다.`, "success");
+        } else if (data.source === "ai" || data.source === "ai_web") {
+          showToast(
+            data.source === "ai_web"
+              ? `웹 검색·AI로 ${data.info.name} 정보를 분석해 추가했습니다.`
+              : `AI가 분석한 정보로 ${data.info.name}을(를) 추가했습니다.`,
+            "success",
+          );
+        } else if (data.source === "database_enriched") {
+          showToast(
+            `${data.info.name}: 웹·AI로 DB 정보를 보강해 추가했습니다.`,
+            "success",
+          );
         } else {
           showToast(`${data.info.name}을(를) 추가했습니다.`, "success");
         }
