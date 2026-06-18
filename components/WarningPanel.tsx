@@ -118,7 +118,7 @@ export function WarningPanel({ meds }: WarningPanelProps) {
         </div>
       )}
 
-      <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-500">
+      <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2.5 text-xs leading-relaxed text-slate-600 sm:text-sm">
         ⚠ 본 정보는 일반적인 참고용입니다. 실제 복약·식이는 반드시 의사·약사의 지시에 따라 진행하세요.
       </p>
     </section>
