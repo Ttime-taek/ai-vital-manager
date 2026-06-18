@@ -199,7 +199,11 @@ export default function HomePage() {
       <Header />
 
       <main
-        className={`mx-auto max-w-6xl space-y-6 px-6 py-8 ${showMobileSticky ? "pb-28 md:pb-8" : ""}`}
+        className={`mx-auto max-w-6xl space-y-5 px-page py-5 sm:space-y-6 sm:py-8 ${
+          showMobileSticky
+            ? "pb-[calc(7rem+env(safe-area-inset-bottom,0px))] md:pb-8"
+            : "pb-safe"
+        }`}
       >
         <AiStatusBanner message={aiNotice} onDismiss={() => setAiNotice(null)} />
 
@@ -264,9 +268,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        <section className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
+        <section className="rounded-2xl bg-white p-section shadow-card ring-1 ring-slate-200/70">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h2 className="text-base font-semibold text-slate-900">30초 안전 판정 (선택)</h2>
               <p className="mt-1 text-xs text-slate-500">
                 필요할 때만 열어서 빠르게 안전 체크를 진행하세요. 예: 와파린, 오메가3
@@ -275,7 +279,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setShowSafety((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-ring"
+              className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-card transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 focus-ring sm:w-auto sm:text-xs"
               aria-expanded={showSafety}
             >
               {showSafety ? (
@@ -303,7 +307,7 @@ export default function HomePage() {
       </main>
 
       {showMobileSticky ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-soft backdrop-blur md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pt-3 shadow-soft backdrop-blur pb-safe md:hidden">
           <button
             type="button"
             disabled={interactionLoading}
@@ -322,8 +326,10 @@ export default function HomePage() {
 
       {toast && (
         <div
-          className={`fixed left-1/2 z-50 -translate-x-1/2 animate-fade-in-up ${
-            showMobileSticky ? "bottom-24 md:bottom-6" : "bottom-6"
+          className={`fixed left-1/2 z-50 w-[min(100%,calc(100vw-2rem))] max-w-md -translate-x-1/2 animate-fade-in-up ${
+            showMobileSticky
+              ? "bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:bottom-6"
+              : "bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]"
           }`}
           role="status"
           aria-live="polite"

@@ -73,11 +73,11 @@ export function StatsBar({
   }
 
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+    <section className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-1 xl:grid-cols-2">
       {items.map(({ icon: Icon, label, value, unit, tone }) => (
         <div
           key={label}
-          className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-card ring-1 ring-slate-200/70"
+          className="flex items-center gap-2.5 rounded-2xl bg-white p-3 shadow-card ring-1 ring-slate-200/70 sm:gap-3 sm:p-4"
         >
           <div
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${tone} text-white`}
@@ -86,7 +86,7 @@ export function StatsBar({
           </div>
           <div className="min-w-0">
             <p className="text-xs text-slate-500">{label}</p>
-            <p className="truncate text-lg font-bold text-slate-900 sm:text-xl">
+            <p className="truncate text-base font-bold text-slate-900 sm:text-xl">
               {value}
               {unit ? (
                 <span className="ml-1 text-sm font-medium text-slate-500">{unit}</span>

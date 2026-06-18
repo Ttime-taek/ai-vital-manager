@@ -280,18 +280,18 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
         </label>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={() => submit(false)}
           disabled={!canSubmit}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-ring disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           무료로 판정
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:ml-auto">
           <button
             type="button"
             onClick={() => {
@@ -301,7 +301,7 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
               setError(null);
               setRawItems("");
             }}
-            className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-ring"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-ring sm:w-auto"
           >
             초기화
           </button>
@@ -316,8 +316,8 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
 
       {result && verdictUi && (
         <div className="mt-4 space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
               <div
                 className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${toneClasses(
                   verdictUi.tone,
@@ -332,12 +332,12 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
               </p>
             </div>
 
-            <div className="shrink-0">
+            <div className="w-full shrink-0 sm:w-auto">
               <button
                 type="button"
                 onClick={() => submit(true)}
                 disabled={paidLoading}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 focus-ring disabled:opacity-50"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 focus-ring disabled:opacity-50 sm:w-auto"
               >
                 {paidLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
                 상세 보기(유료)

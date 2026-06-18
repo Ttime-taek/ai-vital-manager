@@ -2,7 +2,7 @@ import { Pill } from "lucide-react";
 
 export function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-14 text-center">
+    <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-4 py-10 text-center sm:px-6 sm:py-14">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-100 to-brand-200 text-brand-700">
         <Pill className="h-7 w-7" />
       </div>

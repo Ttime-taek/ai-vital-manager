@@ -27,7 +27,7 @@ export function ScheduleTimeline({
   );
 
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
+    <section className="rounded-2xl bg-white p-section shadow-card ring-1 ring-slate-200/70">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-slate-900">
@@ -53,7 +53,7 @@ export function ScheduleTimeline({
         </div>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4">
         {visible.map((slot) => {
           const Icon = ICONS[slot.time];
           const empty = slot.meds.length === 0;

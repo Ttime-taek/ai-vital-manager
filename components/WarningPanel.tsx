@@ -25,7 +25,7 @@ function FoodGuidanceList({
         const theme = themeMap[w.severity];
         return (
           <li key={w.food} className={`rounded-xl border p-3 ${theme.wrap}`}>
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
               <p className="font-semibold text-slate-900">{w.food}</p>
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${theme.chip}`}
@@ -55,7 +55,7 @@ export function WarningPanel({ meds }: WarningPanelProps) {
   const hasAny = avoidItems.length > 0 || recommendItems.length > 0;
 
   return (
-    <section className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/70">
+    <section className="rounded-2xl bg-white p-section shadow-card ring-1 ring-slate-200/70">
       <div className="mb-4">
         <h2 className="text-base font-semibold text-slate-900">식이 가이드</h2>
         <p className="text-xs text-slate-500">

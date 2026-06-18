@@ -195,7 +195,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
 
   if (medications.length < 2) {
     return (
-      <section className="rounded-2xl bg-white px-5 py-4 shadow-card ring-1 ring-slate-200/70">
+      <section className="rounded-2xl bg-white p-card shadow-card ring-1 ring-slate-200/70">
         <h2 className="text-sm font-semibold text-slate-900">약물 상호작용</h2>
         <p className="mt-1 text-xs text-slate-500">
           약·영양제를 2개 이상 추가하면 상호작용을 자동으로 확인합니다.
@@ -208,7 +208,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
     <section
       ref={sectionRef}
       id="drug-interaction-checker"
-      className="rounded-2xl bg-white px-5 py-4 shadow-card ring-1 ring-slate-200/70"
+      className="rounded-2xl bg-white p-card shadow-card ring-1 ring-slate-200/70"
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
             for (const m of medications) all[m.id] = true;
             setSelectedIds(all);
           }}
-          className="text-xs font-semibold text-brand-700 hover:text-brand-800 focus-ring rounded-lg px-2 py-1"
+          className="inline-flex h-10 items-center rounded-lg px-3 text-xs font-semibold text-brand-700 hover:text-brand-800 focus-ring"
         >
           전체 선택
         </button>
@@ -242,7 +242,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
                 type="button"
                 onClick={() => toggle(m.id)}
                 aria-pressed={selected}
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition focus-ring ${
+                className={`min-h-10 rounded-full border px-3 py-2 text-xs font-medium transition focus-ring ${
                   selected
                     ? "border-brand-400 bg-brand-50 text-brand-900 ring-1 ring-brand-200"
                     : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"

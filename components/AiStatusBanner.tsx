@@ -21,7 +21,7 @@ export function AiStatusBanner({ message, onDismiss }: Props) {
       <button
         type="button"
         onClick={onDismiss}
-        className="shrink-0 rounded-lg p-1 text-amber-700 transition hover:bg-amber-100 focus-ring"
+        className="touch-target shrink-0 rounded-lg text-amber-700 transition hover:bg-amber-100 focus-ring"
         aria-label="알림 닫기"
       >
         <X className="h-4 w-4" />

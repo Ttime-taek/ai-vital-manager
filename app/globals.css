@@ -7,12 +7,17 @@
   --foreground: 17 24 39;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 html,
 body {
   background-color: rgb(var(--background));
   color: rgb(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 @layer utilities {
@@ -54,5 +59,29 @@ body {
 @layer utilities {
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/75 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50;
+  }
+
+  .px-page {
+    @apply px-4 sm:px-6;
+  }
+
+  .p-card {
+    @apply p-4 sm:p-5;
+  }
+
+  .p-section {
+    @apply p-4 sm:p-6;
+  }
+
+  .touch-target {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center;
+  }
+
+  .pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .pt-safe {
+    padding-top: max(0px, env(safe-area-inset-top, 0px));
   }
 }

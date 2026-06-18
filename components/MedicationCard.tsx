@@ -77,7 +77,7 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
   const SourceIcon = sourceTag.icon;
 
   return (
-    <article className="animate-fade-in-up rounded-2xl bg-white p-5 shadow-card ring-1 ring-slate-200/70 transition hover:shadow-soft">
+    <article className="animate-fade-in-up rounded-2xl bg-white p-card shadow-card ring-1 ring-slate-200/70 transition hover:shadow-soft">
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -100,7 +100,7 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
         </div>
         <button
           onClick={() => onRemove(entry.id)}
-          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus-ring"
+          className="touch-target shrink-0 rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 focus-ring"
           aria-label="약물 삭제"
         >
           <Trash2 className="h-4 w-4" />
@@ -113,7 +113,7 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
         </p>
       )}
 
-      <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3 text-xs">
+      <div className="mt-4 grid grid-cols-1 gap-2 rounded-xl bg-slate-50 p-3 text-xs min-[420px]:grid-cols-2">
         <div>
           <p className="text-slate-500">복용 횟수</p>
           <p className="mt-0.5 font-semibold text-slate-900">하루 {frequency}회</p>
@@ -143,10 +143,8 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
                     className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${style.dot}`}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-slate-900">
-                        {interaction.food}
-                      </p>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                      <p className="font-semibold text-slate-900">{interaction.food}</p>
                       <span className="shrink-0 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600 ring-1 ring-slate-200">
                         {style.label}
                       </span>
@@ -180,10 +178,8 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
                     className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${style.dot}`}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-slate-900">
-                        {interaction.food}
-                      </p>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                      <p className="font-semibold text-slate-900">{interaction.food}</p>
                       <span className="shrink-0 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium text-emerald-800 ring-1 ring-emerald-200">
                         {style.label}
                       </span>
