@@ -6,6 +6,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+if (process.platform !== "win32") {
+  console.log("prune-swc-stubs: skip (non-Windows / Vercel Linux)");
+  process.exit(0);
+}
+
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const nextDir = path.join(root, "node_modules", "@next");
 const keep = "swc-win32-x64-msvc";
