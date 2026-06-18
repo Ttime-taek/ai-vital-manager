@@ -145,7 +145,7 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                       <p className="font-semibold text-slate-900">{interaction.food}</p>
-                      <span className="shrink-0 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600 ring-1 ring-slate-200">
+                      <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
                         {style.label}
                       </span>
                     </div>
@@ -180,7 +180,7 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                       <p className="font-semibold text-slate-900">{interaction.food}</p>
-                      <span className="shrink-0 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium text-emerald-800 ring-1 ring-emerald-200">
+                      <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-medium text-emerald-800 ring-1 ring-emerald-200">
                         {style.label}
                       </span>
                     </div>

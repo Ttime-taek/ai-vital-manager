@@ -245,7 +245,7 @@ export default function HomePage() {
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-3 lg:col-span-2">
-            <h2 className="px-1 text-base font-semibold text-slate-900">
+            <h2 className="scroll-mt-20 px-1 text-base font-semibold text-slate-900">
               등록된 약물 ({meds.length})
             </h2>
             {meds.length === 0 ? (
@@ -301,7 +301,7 @@ export default function HomePage() {
           ) : null}
         </section>
 
-        <footer className="pt-6 text-center text-xs text-slate-400">
+        <footer className="pt-6 text-center text-xs text-slate-500 sm:text-sm">
           AI 바이탈 매니저 · 본 서비스의 정보는 의료 진단을 대체하지 않습니다.
         </footer>
       </main>
