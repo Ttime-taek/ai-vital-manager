@@ -23,7 +23,13 @@ export function StatsBar({
   interactionTier,
   interactionLabelKo,
 }: StatsBarProps) {
-  const items = [
+  const items: Array<{
+    icon: typeof Pill;
+    label: string;
+    value: number | string;
+    unit: string;
+    tone: string;
+  }> = [
     {
       icon: Pill,
       label: "등록 약물",

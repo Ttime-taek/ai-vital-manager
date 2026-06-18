@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, CreditCard, HelpCircle, Loader2, ShieldAlert } from "lucide-react";
 import type {
   EvidenceStrength,
