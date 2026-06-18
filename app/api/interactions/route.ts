@@ -8,6 +8,7 @@ import { checkInteractionsWithOpenFda } from "@/lib/openFdaInteractions";
 import { checkInteractionsWithCommercialDb, hasCommercialDbConfigured } from "@/lib/commercialInteractions";
 import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
 import { resolveGeminiModel } from "@/lib/geminiModel";
+import { getCerebrasModelId, getGeminiModelPreference } from "@/lib/aiModels";
 import {
   getCerebrasApiKey,
   getGeminiApiKey,
@@ -59,7 +60,7 @@ function getLlmOrder(): LlmProvider[] {
 }
 
 async function explainInteractionWithGemini(payload: InteractionCheckResult, apiKey: string): Promise<string> {
-  const preferred = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+  const preferred = getGeminiModelPreference();
   const model = await resolveGeminiModel({ apiKey, preferred });
   const tierLabel = INTERACTION_TIER_LABEL_KO[payload.tier];
   const hitBlock = payload.hits
@@ -118,7 +119,7 @@ ${hitBlock}
 }
 
 async function explainInteractionWithCerebras(payload: InteractionCheckResult, apiKey: string): Promise<string> {
-  const model = process.env.CEREBRAS_MODEL || "llama3.1-70b";
+  const model = getCerebrasModelId();
   const base = (process.env.CEREBRAS_BASE_URL || "https://api.cerebras.ai/v1").replace(/\/+$/, "");
   const url = `${base}/chat/completions`;
 

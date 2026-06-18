@@ -33,9 +33,9 @@ export async function resolveGeminiModel(opts: {
     const candidates = Array.from(
       new Set([
         preferred,
-        "gemini-2.0-flash",
-        "gemini-1.5-flash-latest",
         "gemini-1.5-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-2.0-flash",
         "gemini-1.5-pro-latest",
       ]),
     );

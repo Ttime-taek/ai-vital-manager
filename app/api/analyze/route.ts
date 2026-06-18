@@ -5,6 +5,11 @@ import { coerceMedicationInfoFromUnknown } from "@/lib/medicationSchema";
 import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
 import { resolveGeminiModel } from "@/lib/geminiModel";
 import {
+  getCerebrasModelId,
+  getGeminiModelPreference,
+  summarizeAiAttemptErrors,
+} from "@/lib/aiModels";
+import {
   getCerebrasApiKey,
   getGeminiApiKey,
   hasCerebrasConfigured,
@@ -23,6 +28,7 @@ import {
 } from "@/lib/medicationWebSearch";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const LIMITS = {
   queryMinLen: 1,
@@ -200,11 +206,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (local) {
+    const hint = summarizeAiAttemptErrors(attemptErrors);
+    const notice =
+      "AI·웹 보강 중 오류가 발생해 로컬 DB 정보를 사용했습니다. 처방전·약사 안내를 우선하세요." +
+      (hint ? ` (${hint})` : "");
     return NextResponse.json({
       info: local,
       source: "database",
-      notice:
-        "AI·웹 보강 중 오류가 발생해 로컬 DB 정보를 사용했습니다. 처방전·약사 안내를 우선하세요.",
+      notice,
       debug: process.env.NODE_ENV === "development" ? attemptErrors : undefined,
     });
   }
@@ -231,7 +240,7 @@ async function analyzeWithGemini(
   localBaseline: MedicationInfo | null,
   web: MedicationWebContext | null,
 ): Promise<MedicationInfo> {
-  const preferred = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+  const preferred = getGeminiModelPreference();
   const model = await resolveGeminiModel({ apiKey, preferred });
   const systemPrompt = buildMedicationSystemPrompt();
   const userPrompt = buildAnalyzeUserPrompt(query, web, localBaseline);
@@ -290,7 +299,7 @@ async function analyzeWithCerebras(
   const apiKey = getCerebrasApiKey();
   if (!apiKey) throw new Error("CEREBRAS_API_KEY missing");
 
-  const model = process.env.CEREBRAS_MODEL || "llama3.1-70b";
+  const model = getCerebrasModelId();
   const base = (process.env.CEREBRAS_BASE_URL || "https://api.cerebras.ai/v1").replace(/\/+$/, "");
   const url = `${base}/chat/completions`;
   const systemPrompt = buildMedicationSystemPrompt();
