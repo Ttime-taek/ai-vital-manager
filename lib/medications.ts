@@ -458,6 +458,95 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
     ],
     notes: "복용 중인 처방약이 많다면 약사와 상호작용 가능성을 확인하세요.",
   },
+  {
+    name: "리라글루타이드 (비만·체중)",
+    aliases: [
+      "삭센다",
+      "saxenda",
+      "liraglutide",
+      "리라글루타이드",
+      "Saxenda",
+    ],
+    category: "GLP-1 수용체 작용제 (비만·체중관리, 주사)",
+    description:
+      "비만·체중 관리를 위해 하루 1회 피하 주사로 사용하는 GLP-1 유사체입니다. 식욕 억제와 체중 감량 보조 목적의 처방약입니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "고지방·과식",
+        reason: "구역, 구토, 설사 등 위장 부작용이 심해질 수 있습니다.",
+        severity: "medium",
+      },
+      {
+        food: "알코올 (술)",
+        reason: "위장 자극과 어지러움이 심해질 수 있으며, 당뇨약과 병용 시 저혈당 위험이 있습니다.",
+        severity: "medium",
+      },
+    ],
+    notes:
+      "매일 비슷한 시간에 주사합니다. 개봉 전 냉장 보관이 필요합니다. 용량은 의사 지시에 따라 점진적으로 올립니다. 임신·수유 중에는 사용하지 않습니다.",
+  },
+  {
+    name: "세마글루타이드 (비만·체중)",
+    aliases: [
+      "위고비",
+      "wegovy",
+      "semaglutide",
+      "세마글루타이드",
+      "Wegovy",
+    ],
+    category: "GLP-1 수용체 작용제 (비만·체중관리, 주사)",
+    description:
+      "비만·체중 관리를 위해 주 1회 피하 주사로 사용하는 GLP-1 유사체입니다. 식욕 조절과 체중 감량을 돕는 처방약입니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "고지방·과식",
+        reason: "구역, 구토, 복부 불편감 등 위장 부작용이 악화될 수 있습니다.",
+        severity: "medium",
+      },
+      {
+        food: "알코올 (술)",
+        reason: "위장 증상과 어지러움이 심해질 수 있으며, 인슐린·설포닐우레아 등과 병용 시 저혈당에 주의해야 합니다.",
+        severity: "medium",
+      },
+    ],
+    notes:
+      "매주 같은 요일·비슷한 시간에 주사합니다. 식전·식후와 관계없이 투여 가능합니다. 개봉 전 냉장 보관, 개봉 후 사용 기한을 지키세요. 당뇨 치료용 오젬픽(저용량)과 용도·용량이 다릅니다.",
+  },
+  {
+    name: "티르제파타이드 (비만·체중)",
+    aliases: [
+      "마운자로",
+      "mounjaro",
+      "tirzepatide",
+      "티르제파타이드",
+      "Mounjaro",
+      "zepbound",
+      "젭바운드",
+    ],
+    category: "GIP/GLP-1 이중 작용제 (비만·체중관리, 주사)",
+    description:
+      "비만·체중 관리를 위해 주 1회 피하 주사로 사용하는 GIP·GLP-1 이중 작용제입니다. 식욕 억제와 체중 감량 보조에 쓰입니다.",
+    defaultFrequency: 1,
+    foodTiming: "any",
+    avoidFoods: [
+      {
+        food: "고지방·과식",
+        reason: "구역, 구토, 설사 등 위장 부작용이 두드러질 수 있습니다.",
+        severity: "medium",
+      },
+      {
+        food: "알코올 (술)",
+        reason: "위장 증상 악화 및 당뇨약 병용 시 저혈당 위험이 있습니다.",
+        severity: "medium",
+      },
+    ],
+    notes:
+      "매주 같은 날 주사합니다. 용량은 처방에 따라 단계적으로 증량합니다. 개봉 전 냉장 보관이 필요합니다. 췌장염(지속 복통) 증상 시 즉시 진료를 받으세요.",
+  },
 ];
 
 const normalize = (s: string) => s.replace(/\s+/g, "").toLowerCase();
