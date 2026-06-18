@@ -64,13 +64,9 @@ export function MedicationScanPanel({ onAdd, loading }: MedicationScanPanelProps
       const res = await fetch("/api/scan", { method: "POST", body: form });
       const data = (await res.json()) as ScanResponse;
 
-      if (res.status === 429) {
+      if (res.status === 429 && res.headers.get("Retry-After")) {
         const retry = res.headers.get("Retry-After");
-        setScanError(
-          retry
-            ? `요청이 너무 많습니다. ${retry}초 후 다시 시도해 주세요.`
-            : "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
-        );
+        setScanError(`요청이 너무 많습니다. ${retry}초 후 다시 시도해 주세요.`);
         return;
       }
 

@@ -7,6 +7,11 @@ import {
 } from "@/lib/serverRateLimit";
 import { scanMedicationLabelWithGemini } from "@/lib/medicationScan";
 import {
+  clientStatusForUpstreamAi,
+  getUpstreamErrorStatus,
+  userMessageForScanFailure,
+} from "@/lib/upstreamAiErrors";
+import {
   SCAN_LIMITS,
   validateImageBuffer,
 } from "@/lib/scanImageValidation";
@@ -121,17 +126,14 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("[scan] gemini vision error:", err);
-    const status =
-      err instanceof Error && "status" in err && typeof (err as { status?: number }).status === "number"
-        ? (err as { status: number }).status
-        : 502;
+    const upstreamStatus = getUpstreamErrorStatus(err);
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
       {
-        error:
-          "라벨 스캔에 실패했습니다. 사진을 더 밝고 선명하게 다시 찍거나, 약물명을 직접 입력해 주세요.",
+        error: userMessageForScanFailure({ upstreamStatus, message }),
         products: [],
       },
-      { status: status >= 400 && status < 600 ? status : 502 },
+      { status: clientStatusForUpstreamAi(upstreamStatus) },
     );
   }
 }

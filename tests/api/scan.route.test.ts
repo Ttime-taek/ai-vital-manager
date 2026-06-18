@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { POST } from "@/app/api/scan/route";
+import * as medicationScan from "@/lib/medicationScan";
 
 function makeJsonReq(body: unknown, ip = "1.2.3.4") {
   return new Request("http://localhost/api/scan", {
@@ -62,6 +63,27 @@ describe("/api/scan", () => {
     expect(res.status).toBe(503);
     const json = await readJson(res);
     expect(json.error).toContain("GEMINI");
+  });
+
+  it("maps Gemini quota errors to 503 with clear message", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    const err = new Error("Gemini vision 429: RESOURCE_EXHAUSTED");
+    (err as Error & { status?: number }).status = 429;
+    vi.spyOn(medicationScan, "scanMedicationLabelWithGemini").mockRejectedValue(err);
+
+    const tinyPng = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64",
+    );
+    const res = await POST(
+      makeJsonReq({
+        imageBase64: tinyPng.toString("base64"),
+        mimeType: "image/png",
+      }),
+    );
+    expect(res.status).toBe(503);
+    const json = await readJson(res);
+    expect(json.error).toContain("사용 한도");
   });
 
   it("rate limits after many requests", async () => {
