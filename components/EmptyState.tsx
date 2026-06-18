@@ -10,8 +10,9 @@ export function EmptyState() {
         아직 등록된 약물이 없어요
       </h3>
       <p className="mt-1 max-w-sm text-sm text-slate-500">
-        위쪽 검색창에 처방받은 약 이름을 입력하시면, 복약 스케줄과 음식 상호작용을
-        자동으로 분석해 드립니다.
+        위쪽 검색창에 약·영양제 이름을 입력하고 <strong className="font-semibold text-slate-700">추가</strong>
+        를 누르세요. 복용 중인 약을 <strong className="font-semibold text-slate-700">여러 개</strong>{" "}
+        등록하면 복약 스케줄·음식 상호작용·약물 간 상호작용을 한 번에 확인할 수 있습니다.
       </p>
     </div>
   );

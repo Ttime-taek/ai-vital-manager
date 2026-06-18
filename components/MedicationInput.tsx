@@ -43,7 +43,10 @@ export function MedicationInput({
         <div>
           <h2 className="text-sm font-semibold text-slate-900">약물·영양제 추가</h2>
           <p className="mt-0.5 text-xs text-slate-500">
-            처방약·영양제 이름을 검색해 등록합니다 (한/영).
+            복용 중인 약·영양제를 여러 개 차례로 추가할 수 있습니다 (한/영).
+            {canReset
+              ? " 아래 검색창에 이름을 입력해 계속 등록하세요."
+              : " 하나 추가한 뒤에도 같은 방법으로 계속 추가하세요."}
           </p>
         </div>
         {onReset && (
@@ -69,7 +72,7 @@ export function MedicationInput({
             onKeyDown={(e) => {
               if (e.key === "Enter") submit();
             }}
-            placeholder="약·영양제 이름 (예: 위고비, vitamin d)"
+            placeholder="약·영양제 이름 입력 후 추가 (여러 개 가능)"
             className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100"
             disabled={loading}
           />
@@ -89,7 +92,16 @@ export function MedicationInput({
         </button>
       </div>
 
+      <p className="mt-2.5 rounded-lg border border-brand-100 bg-brand-50/80 px-3 py-2 text-[11px] leading-relaxed text-brand-900">
+        <span className="font-semibold">Tip</span> 추가 버튼이나 Enter로 등록한 뒤, 검색창이
+        비워지면 다음 약을 이어서 추가할 수 있습니다. 2개 이상이면 상호작용도 자동으로
+        확인합니다.
+      </p>
+
       <div className="mt-3 flex flex-wrap gap-1.5">
+        <span className="w-full text-[10px] font-medium uppercase tracking-wide text-slate-400">
+          빠른 추가
+        </span>
         {SUGGESTIONS.map((s) => (
           <button
             key={s}
