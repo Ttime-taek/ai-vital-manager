@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { findMedication } from "@/lib/medications";
 import type { MedicationInfo } from "@/lib/types";
 import { coerceMedicationInfoFromUnknown } from "@/lib/medicationSchema";
-import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
+import {
+  checkIpRateLimit,
+  createIpMinuteLimiter,
+  getClientIp,
+} from "@/lib/serverRateLimit";
 import { resolveGeminiModel } from "@/lib/geminiModel";
 import {
   getCerebrasModelId,
@@ -33,7 +37,7 @@ export const maxDuration = 60;
 const LIMITS = {
   queryMinLen: 1,
   queryMaxLen: 80,
-  requestsPerMinutePerIp: 20,
+  requestsPerMinutePerIp: 40,
   geminiTimeoutMs: 15_000,
   cerebrasTimeoutMs: 15_000,
 };
@@ -123,7 +127,7 @@ export async function POST(req: NextRequest) {
   const query = validated.value;
 
   const ip = getClientIp(req);
-  const rl = isRateLimited(ip);
+  const rl = checkIpRateLimit(isRateLimited, ip);
   if (rl.limited) {
     return new NextResponse(JSON.stringify({ error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }), {
       status: 429,

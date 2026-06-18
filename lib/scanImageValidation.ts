@@ -1,6 +1,6 @@
 export const SCAN_LIMITS = {
   maxBytes: 5 * 1024 * 1024,
-  requestsPerMinutePerIp: 12,
+  requestsPerMinutePerIp: 30,
 } as const;
 
 export function normalizeImageMime(mime: string): string | null {

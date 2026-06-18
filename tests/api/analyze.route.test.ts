@@ -62,7 +62,7 @@ describe("/api/analyze", () => {
   it("rate limits after many requests per minute from same IP", async () => {
     // No GEMINI key, so requests are cheap and hit fallback, but limiter should still trigger.
     let last: Response | null = null;
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 41; i++) {
       last = await POST(makeReq({ query: "unknownmed" }, "9.9.9.9"));
     }
     expect(last).not.toBeNull();

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiApiKey, hasGeminiConfigured, hasPlaceholderApiKeys } from "@/lib/aiEnv";
-import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
+import {
+  checkIpRateLimit,
+  createIpMinuteLimiter,
+  getClientIp,
+} from "@/lib/serverRateLimit";
 import { scanMedicationLabelWithGemini } from "@/lib/medicationScan";
 import {
   SCAN_LIMITS,
@@ -71,7 +75,7 @@ async function readImageFromRequest(
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rl = isRateLimited(ip);
+  const rl = checkIpRateLimit(isRateLimited, ip);
   if (rl.limited) {
     return new NextResponse(
       JSON.stringify({ error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }),

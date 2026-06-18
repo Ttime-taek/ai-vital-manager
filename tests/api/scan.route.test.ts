@@ -74,7 +74,7 @@ describe("/api/scan", () => {
       mimeType: "image/png",
     };
     let last: Response | null = null;
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 31; i++) {
       last = await POST(makeJsonReq(body, "7.7.7.7"));
     }
     expect(last).not.toBeNull();
