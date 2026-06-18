@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
     let notice: string;
     if (hasPlaceholderApiKeys()) {
       notice =
-        "API 키 값이 잘못 입력된 것 같습니다. Vercel Environment Variables에서 GEMINI_API_KEY / CEREBRAS_API_KEY에 실제 키를 넣어 주세요.";
+        "API 키 값이 잘못 입력된 것 같습니다. Vercel Environment Variables에서 GEMINI_API_KEY / CEREBRAS_API_KEY(필수), SERPER_API_KEY(한국어 웹 검색 권장)에 실제 키를 넣어 주세요.";
     } else {
       notice =
         "AI API 키가 설정되어 있지 않아 웹 검색·AI 보강을 수행하지 못했습니다.";
@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
   let notice: string;
   if (hasPlaceholderApiKeys()) {
     notice =
-      "API 키 값이 잘못 입력된 것 같습니다. Vercel Environment Variables에서 GEMINI_API_KEY / CEREBRAS_API_KEY에 .env.local과 동일한 실제 키를 넣어 주세요.";
+      "API 키 값이 잘못 입력된 것 같습니다. Vercel Environment Variables에서 GEMINI_API_KEY / CEREBRAS_API_KEY(필수), SERPER_API_KEY(한국어 웹 검색 권장)에 .env.local과 동일한 실제 키를 넣어 주세요.";
   } else {
     notice =
       "웹 검색·AI 분석 중 오류가 발생하여 일반 안내로 대체했습니다. 정확한 정보는 약사·의사에게 확인하세요.";

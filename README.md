@@ -4,7 +4,7 @@
 
 ## 주요 기능
 
-- 약물 검색 — 로컬 약물 DB 매칭 후, 없으면 Gemini/Cerebras로 보강(선택)
+- 약물 검색 — 로컬 DB + **웹 검색(openFDA 등)** + Gemini/Cerebras AI 보강 (DB보다 더 좋으면 자동 대체)
 - 자동 복약 스케줄 — 횟수에 따라 시간대 분배
 - 음식 상호작용 경고 — 자몽주스, 알코올 등
 - 약물 상호작용 점검 — 로컬 규칙, openFDA 경로, (옵션) 상용 API, 주의/금기 시 LLM 설명
@@ -58,14 +58,51 @@ npm run build
 
 | 변수 | 용도 |
 |------|------|
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | 약물 AI 분석, 상호작용 설명 |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | 약물 AI 분석, 상호작용 설명 (**필수에 가까움**) |
 | `CEREBRAS_API_KEY`, `CEREBRAS_MODEL`, `CEREBRAS_BASE_URL` | Gemini 대체/폴백 |
 | `AI_PROVIDER` | `analyze` 라우트: `auto` / `gemini` / `cerebras` |
+| `MEDICATION_WEB_SEARCH` | `0`이면 웹 검색 비활성 (기본: 활성) |
+| `SERPER_API_KEY` | Google 검색 — **한국어 약물 웹 검색 품질 향상 (Vercel 권장)** |
+| `TAVILY_API_KEY` | Tavily 검색 (선택, Serper 대안) |
 | `INTERACTIONS_LLM_ORDER` | `interactions` 라우트 LLM 순서 (예: `gemini,cerebras`) |
 | `COMMERCIAL_DI_*` | 상용 상호작용 API 연동 시 |
 | `USDA_FDC_API_KEY` | 영양 DB(프로덕션에서 권장) |
 
+`SERPER_API_KEY` / `TAVILY_API_KEY` 없이도 `GEMINI_API_KEY` 또는 `CEREBRAS_API_KEY`만으로 동작합니다. 다만 한국어·최신 약물 정보는 Serper 설정 시 훨씬 좋아집니다.
+
 실제 키가 들어간 파일은 Git에 커밋하지 마세요.
+
+## Vercel 배포
+
+프로덕션: [https://ai-vital-manager-xmi5.vercel.app](https://ai-vital-manager-xmi5.vercel.app)
+
+### 환경 변수 (Vercel Dashboard → Settings → Environment Variables)
+
+| 우선순위 | 변수 | 설명 |
+|----------|------|------|
+| 필수 | `GEMINI_API_KEY` 또는 `CEREBRAS_API_KEY` | AI 약물 분석 |
+| 권장 | `SERPER_API_KEY` | Google 검색 — 한국어 약물 웹 검색 ([serper.dev](https://serper.dev)) |
+| 선택 | `TAVILY_API_KEY` | Tavily 검색 (Serper 대안) |
+| 선택 | `GEMINI_MODEL`, `AI_PROVIDER`, `CEREBRAS_*` | 모델·폴백 순서 |
+
+Production / Preview / Development 모두에 동일하게 넣은 뒤 **Redeploy** 하세요.
+
+### `.env.local` → Vercel 일괄 동기화 (Windows)
+
+```powershell
+npx vercel login
+npx vercel link    # ai-vital-manager-xmi5 프로젝트 선택
+powershell -ExecutionPolicy Bypass -File .\scripts\sync-vercel-env.ps1
+npx vercel --prod  # 또는 Dashboard에서 Redeploy
+```
+
+`sync-vercel-env.ps1`은 `.env.local`의 AI·웹 검색 키(`SERPER_API_KEY`, `TAVILY_API_KEY` 포함)를 Vercel에 반영합니다.
+
+### 배포 후 확인 (스모크 테스트)
+
+1. **DB에 없는 약** — 예: 처음 보는 약 이름 입력 → 카드 배지 **웹·AI** 또는 **AI 분석**, 식이 가이드 표시
+2. **DB에 있는 약** — **위고비** 입력 → 웹·AI가 DB보다 풍부하면 배지 **AI 보강** (`database_enriched`)
+3. API 키 미설정 시 — fallback 안내 토스트, **내장 DB**만 즉시 반환(타이레놀 등)
 
 ## 프로젝트 구조 (요약)
 
