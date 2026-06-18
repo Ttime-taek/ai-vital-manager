@@ -8,6 +8,12 @@ import { checkInteractionsWithOpenFda } from "@/lib/openFdaInteractions";
 import { checkInteractionsWithCommercialDb, hasCommercialDbConfigured } from "@/lib/commercialInteractions";
 import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
 import { resolveGeminiModel } from "@/lib/geminiModel";
+import {
+  getCerebrasApiKey,
+  getGeminiApiKey,
+  hasCerebrasConfigured,
+  hasGeminiConfigured,
+} from "@/lib/aiEnv";
 
 export const runtime = "nodejs";
 
@@ -23,14 +29,6 @@ const isRateLimited = createIpMinuteLimiter(LIMITS.requestsPerMinutePerIp);
 const BodySchema = z.object({
   drugNames: z.array(z.string().trim().min(1).max(LIMITS.nameMaxLen)).min(2).max(LIMITS.drugsMax),
 });
-
-function hasGeminiConfigured() {
-  return Boolean(process.env.GEMINI_API_KEY);
-}
-
-function hasCerebrasConfigured() {
-  return Boolean(process.env.CEREBRAS_API_KEY);
-}
 
 type LlmProvider = "gemini" | "cerebras";
 function getLlmOrder(): LlmProvider[] {
@@ -291,7 +289,7 @@ export async function POST(req: NextRequest) {
       if (p === "gemini") {
         if (!hasGeminiConfigured()) continue;
         try {
-          llmExplanation = await explainInteractionWithGemini(result, process.env.GEMINI_API_KEY!);
+          llmExplanation = await explainInteractionWithGemini(result, getGeminiApiKey()!);
           llmProvider = "gemini";
           break;
         } catch (err) {
@@ -301,7 +299,7 @@ export async function POST(req: NextRequest) {
       } else {
         if (!hasCerebrasConfigured()) continue;
         try {
-          llmExplanation = await explainInteractionWithCerebras(result, process.env.CEREBRAS_API_KEY!);
+          llmExplanation = await explainInteractionWithCerebras(result, getCerebrasApiKey()!);
           llmProvider = "cerebras";
           break;
         } catch (err) {

@@ -5,6 +5,13 @@ import { coerceMedicationInfoFromUnknown } from "@/lib/medicationSchema";
 import { createIpMinuteLimiter, getClientIp } from "@/lib/serverRateLimit";
 import { resolveGeminiModel } from "@/lib/geminiModel";
 import { isLowConfidenceMedicationInfo } from "@/lib/medicationConfidence";
+import {
+  getCerebrasApiKey,
+  getGeminiApiKey,
+  hasCerebrasConfigured,
+  hasGeminiConfigured,
+  hasPlaceholderApiKeys,
+} from "@/lib/aiEnv";
 
 export const runtime = "nodejs";
 
@@ -23,14 +30,6 @@ function getProviderOrder(): Array<Exclude<AiProvider, "auto">> {
   if (raw === "gemini") return ["gemini"];
   if (raw === "cerebras") return ["cerebras"];
   return ["gemini", "cerebras"];
-}
-
-function hasGeminiConfigured() {
-  return Boolean(process.env.GEMINI_API_KEY);
-}
-
-function hasCerebrasConfigured() {
-  return Boolean(process.env.CEREBRAS_API_KEY);
 }
 
 const isRateLimited = createIpMinuteLimiter(LIMITS.requestsPerMinutePerIp);
@@ -131,7 +130,7 @@ export async function POST(req: NextRequest) {
     try {
       const info =
         provider === "gemini"
-          ? await analyzeWithGemini(query, process.env.GEMINI_API_KEY!)
+          ? await analyzeWithGemini(query, getGeminiApiKey()!)
           : await analyzeWithCerebras(query);
 
       const lowConf = isLowConfidenceMedicationInfo(info, query);
@@ -158,12 +157,21 @@ export async function POST(req: NextRequest) {
   }
 
   const configured = hasGeminiConfigured() || hasCerebrasConfigured();
+  let notice: string;
+  if (hasPlaceholderApiKeys()) {
+    notice =
+      "API 키 값이 잘못 입력된 것 같습니다. Vercel Environment Variables에서 GEMINI_API_KEY / CEREBRAS_API_KEY에 .env.local과 동일한 실제 키를 넣어 주세요.";
+  } else if (configured) {
+    notice =
+      "AI 분석 중 오류가 발생하여 일반 안내로 대체했습니다. 정확한 정보는 약사·의사에게 확인하세요.";
+  } else {
+    notice =
+      "AI API 키가 설정되어 있지 않아 분석을 수행하지 못했습니다. (.env.local에 GEMINI_API_KEY 또는 CEREBRAS_API_KEY를 추가하세요)";
+  }
   return NextResponse.json({
     info: FALLBACK_INFO(query),
     source: "fallback",
-    notice: configured
-      ? "AI 분석 중 오류가 발생하여 일반 안내로 대체했습니다. 정확한 정보는 약사·의사에게 확인하세요."
-      : "AI API 키가 설정되어 있지 않아 분석을 수행하지 못했습니다. (.env.local에 GEMINI_API_KEY 또는 CEREBRAS_API_KEY를 추가하세요)",
+    notice,
     debug: process.env.NODE_ENV === "development" ? attemptErrors : undefined,
   });
 }
@@ -249,7 +257,7 @@ async function analyzeWithGemini(
 }
 
 async function analyzeWithCerebras(query: string): Promise<MedicationInfo> {
-  const apiKey = process.env.CEREBRAS_API_KEY;
+  const apiKey = getCerebrasApiKey();
   if (!apiKey) throw new Error("CEREBRAS_API_KEY missing");
 
   const model = process.env.CEREBRAS_MODEL || "llama3.1-70b";

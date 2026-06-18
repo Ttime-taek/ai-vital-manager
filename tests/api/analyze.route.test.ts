@@ -76,6 +76,15 @@ describe("/api/analyze", () => {
     expect(json.info?.name).toBeTruthy();
   });
 
+  it("rejects placeholder API keys like Gemini/CEREBRAS labels", async () => {
+    process.env.GEMINI_API_KEY = "Gemini";
+    process.env.CEREBRAS_API_KEY = "CEREBRAS";
+    const res = await POST(makeReq({ query: "완전처음보는약" }, "2.2.2.3"));
+    const json = await readJson(res);
+    expect(json.source).toBe("fallback");
+    expect(json.notice).toMatch(/잘못 입력/);
+  });
+
   it("uses Cerebras when only CEREBRAS_API_KEY is set", async () => {
     process.env.CEREBRAS_API_KEY = "test";
     process.env.CEREBRAS_MODEL = "any";
