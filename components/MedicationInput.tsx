@@ -38,15 +38,13 @@ export function MedicationInput({
   };
 
   return (
-    <section className="rounded-2xl bg-white p-card shadow-card ring-1 ring-slate-200/70">
+    <section id="add-medication" className="scroll-mt-20 rounded-2xl bg-white p-card shadow-card ring-1 ring-slate-200/70">
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-slate-900">약물·영양제 추가</h2>
           <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
-            복용 중인 약·영양제를 여러 개 차례로 추가할 수 있습니다 (한/영).
-            {canReset
-              ? " 아래 검색창에 이름을 입력해 계속 등록하세요."
-              : " 하나 추가한 뒤에도 같은 방법으로 계속 추가하세요."}
+            이름을 입력하고 추가하세요. 여러 개 등록 가능 (한/영).
+            {canReset ? " 계속 추가하려면 아래 검색창을 사용하세요." : null}
           </p>
         </div>
         {onReset && (
@@ -94,10 +92,9 @@ export function MedicationInput({
         </button>
       </div>
 
-      <p className="mt-2.5 rounded-lg border border-brand-100 bg-brand-50/80 px-3 py-2 text-[11px] leading-relaxed text-brand-900">
-        <span className="font-semibold">Tip</span> 추가 버튼이나 Enter로 등록한 뒤, 검색창이
-        비워지면 다음 약을 이어서 추가할 수 있습니다. 2개 이상이면 상호작용도 자동으로
-        확인합니다.
+      <p className="mt-2.5 rounded-lg border border-brand-100 bg-brand-50/80 px-3 py-2 text-xs leading-relaxed text-brand-900 sm:text-[11px]">
+        <span className="font-semibold">Tip</span> 추가 후 검색창이 비워지면 다음 약을 이어서 넣을 수 있습니다. 2개
+        이상이면 상호작용도 자동 확인됩니다.
       </p>
 
       <div className="mt-3 flex flex-wrap gap-1.5">

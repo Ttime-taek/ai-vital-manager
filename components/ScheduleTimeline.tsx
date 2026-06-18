@@ -27,7 +27,7 @@ export function ScheduleTimeline({
   );
 
   return (
-    <section className="rounded-2xl bg-white p-section shadow-card ring-1 ring-slate-200/70">
+    <section className="scroll-mt-20 rounded-2xl bg-white p-section shadow-card ring-1 ring-slate-200/70">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-slate-900">
