@@ -96,48 +96,79 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
     return medications.filter((m) => selectedIds[m.id]).map((m) => m.info.name);
   }, [medications, selectedIds]);
 
+  const selectedNamesKey = useMemo(
+    () => [...selectedNames].sort().join("\0"),
+    [selectedNames],
+  );
+
+  const requestIdRef = useRef(0);
+
   const toggle = useCallback((id: string) => {
     setSelectedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
-  const runCheck = useCallback(async () => {
-    setError(null);
-    setLoading(true);
-    setResponse(null);
-    try {
-      const res = await fetch("/api/interactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ drugNames: selectedNames }),
-      });
-      const data = (await res.json()) as ApiInteractionResponse;
+  const runCheck = useCallback(
+    async (drugNames: string[]) => {
+      if (drugNames.length < 2) return;
 
-      if (res.status === 429) {
-        const retry = res.headers.get("Retry-After");
-        const msg = retry
-          ? `요청이 너무 많습니다. ${retry}초 후 다시 시도해 주세요.`
-          : "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
-        setError(msg);
-        onNotice?.(msg);
-        onResultChange?.(null);
-        return;
-      }
+      const requestId = ++requestIdRef.current;
+      setError(null);
+      setLoading(true);
+      setResponse(null);
 
-      if (!res.ok || data.error) {
-        setError(data.error ?? "요청에 실패했습니다.");
+      try {
+        const res = await fetch("/api/interactions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drugNames }),
+        });
+        const data = (await res.json()) as ApiInteractionResponse;
+
+        if (requestId !== requestIdRef.current) return;
+
+        if (res.status === 429) {
+          const retry = res.headers.get("Retry-After");
+          const msg = retry
+            ? `요청이 너무 많습니다. ${retry}초 후 다시 시도해 주세요.`
+            : "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+          setError(msg);
+          onNotice?.(msg);
+          onResultChange?.(null);
+          return;
+        }
+
+        if (!res.ok || data.error) {
+          setError(data.error ?? "요청에 실패했습니다.");
+          onResultChange?.(null);
+          onNotice?.(null);
+          return;
+        }
+        setResponse(data);
+        onNotice?.(data.notice?.trim() || null);
+        onResultChange?.(data.tier ?? null, data.tierLabelKo);
+      } catch (e) {
+        if (requestId !== requestIdRef.current) return;
+        setError(e instanceof Error ? e.message : "네트워크 오류가 발생했습니다.");
         onResultChange?.(null);
-        onNotice?.(null);
-        return;
+      } finally {
+        if (requestId === requestIdRef.current) setLoading(false);
       }
-      setResponse(data);
-      onNotice?.(data.notice?.trim() || null);
-      onResultChange?.(data.tier ?? null, data.tierLabelKo);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "네트워크 오류가 발생했습니다.");
-    } finally {
+    },
+    [onNotice, onResultChange],
+  );
+
+  useEffect(() => {
+    if (selectedNames.length < 2) {
+      requestIdRef.current += 1;
       setLoading(false);
+      setResponse(null);
+      setError(null);
+      onResultChange?.(null);
+      onNotice?.(null);
+      return;
     }
-  }, [selectedNames, onNotice, onResultChange]);
+    void runCheck(selectedNames);
+  }, [selectedNamesKey, runCheck, onNotice, onResultChange]);
 
   const canRun = selectedNames.length >= 2 && !loading;
 
@@ -149,7 +180,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
     ref,
     () => ({
       runCheck: () => {
-        if (selectedNames.length >= 2 && !loading) void runCheck();
+        if (selectedNames.length >= 2 && !loading) void runCheck(selectedNames);
       },
       scrollIntoView: () => {
         sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -157,7 +188,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
       canRun,
       loading,
     }),
-    [canRun, loading, runCheck, selectedNames.length],
+    [canRun, loading, runCheck, selectedNames],
   );
   const tier = response?.tier;
   const ui = tier ? TIER_UI[tier] : null;
@@ -167,7 +198,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
       <section className="rounded-2xl bg-white px-5 py-4 shadow-card ring-1 ring-slate-200/70">
         <h2 className="text-sm font-semibold text-slate-900">약물 상호작용</h2>
         <p className="mt-1 text-xs text-slate-500">
-          위에서 약·영양제를 2개 이상 추가하면 상호작용을 확인할 수 있습니다.
+          약·영양제를 2개 이상 추가하면 상호작용을 자동으로 확인합니다.
         </p>
       </section>
     );
@@ -180,7 +211,15 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
       className="rounded-2xl bg-white px-5 py-4 shadow-card ring-1 ring-slate-200/70"
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-slate-900">약물 상호작용</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-slate-900">약물 상호작용</h2>
+          {loading && (
+            <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              확인 중…
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -215,18 +254,6 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
           );
         })}
       </ul>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => runCheck()}
-          disabled={!canRun}
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-xs font-semibold text-white transition hover:bg-slate-800 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-          상호작용 확인 ({selectedNames.length}개)
-        </button>
-      </div>
 
       {error && (
         <div className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800 ring-1 ring-rose-200">

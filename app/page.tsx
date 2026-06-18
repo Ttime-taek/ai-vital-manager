@@ -290,10 +290,7 @@ export default function HomePage() {
           <button
             type="button"
             disabled={interactionLoading}
-            onClick={() => {
-              interactionRef.current?.scrollIntoView();
-              window.setTimeout(() => interactionRef.current?.runCheck(), 350);
-            }}
+            onClick={() => interactionRef.current?.scrollIntoView()}
             className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             {interactionLoading ? (
@@ -301,7 +298,7 @@ export default function HomePage() {
             ) : (
               <Shield className="h-4 w-4" />
             )}
-            상호작용 확인 ({meds.length}개)
+            상호작용 결과 ({meds.length}개)
           </button>
         </div>
       ) : null}
