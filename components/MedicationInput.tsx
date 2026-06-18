@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, Plus, RotateCcw, Search } from "lucide-react";
+import { MedicationScanPanel } from "@/components/MedicationScanPanel";
 
 interface MedicationInputProps {
   onAdd: (query: string) => Promise<void>;
@@ -96,6 +97,8 @@ export function MedicationInput({
         <span className="font-semibold">Tip</span> 추가 후 검색창이 비워지면 다음 약을 이어서 넣을 수 있습니다. 2개
         이상이면 상호작용도 자동 확인됩니다.
       </p>
+
+      <MedicationScanPanel onAdd={onAdd} loading={loading} />
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         <span className="w-full text-[10px] font-medium uppercase tracking-wide text-slate-400">
