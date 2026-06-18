@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Loader2, RotateCcw, Shield } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Shield } from "lucide-react";
 import { AiStatusBanner } from "@/components/AiStatusBanner";
 import { Header } from "@/components/Header";
 import { MedicationInput } from "@/components/MedicationInput";
@@ -11,7 +11,6 @@ import { WarningPanel } from "@/components/WarningPanel";
 import { StatsBar } from "@/components/StatsBar";
 import { EmptyState } from "@/components/EmptyState";
 import { DrugInteractionChecker, type DrugInteractionCheckerHandle } from "@/components/DrugInteractionChecker";
-import { NutritionProductPanel } from "@/components/NutritionProductPanel";
 import { SafetyChecker } from "@/components/SafetyChecker";
 import { buildSchedule, getSlotsForFrequency } from "@/lib/scheduleEngine";
 import { loadStoredMeds, saveStoredMeds } from "@/lib/medsStorage";
@@ -191,7 +190,12 @@ export default function HomePage() {
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="space-y-3">
-              <MedicationInput onAdd={handleAdd} loading={loading} />
+              <MedicationInput
+                onAdd={handleAdd}
+                loading={loading}
+                onReset={handleReset}
+                canReset={meds.length > 0}
+              />
               <DrugInteractionChecker
                 ref={interactionRef}
                 medications={meds}
@@ -199,20 +203,6 @@ export default function HomePage() {
                 onResultChange={handleInteractionResult}
                 onLoadingChange={setInteractionLoading}
               />
-              <NutritionProductPanel
-                registeredMedicationNames={meds.map((m) => m.info.name)}
-              />
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  disabled={loading || meds.length === 0}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-card transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-ring disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  전체 초기화
-                </button>
-              </div>
             </div>
           </div>
           <div className="lg:col-span-1">
