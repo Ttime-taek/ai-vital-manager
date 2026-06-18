@@ -169,10 +169,16 @@ export default function HomePage() {
         m.info.avoidFoods.map((f) => f.food.trim().toLowerCase()),
       ),
     ).size;
+    const recommendCount = new Set(
+      meds.flatMap((m) =>
+        (m.info.recommendedFoods ?? []).map((f) => f.food.trim().toLowerCase()),
+      ),
+    ).size;
     return {
       medCount: meds.length,
       doseCount,
       warningCount,
+      recommendCount,
     };
   }, [meds]);
 
@@ -210,6 +216,7 @@ export default function HomePage() {
               medCount={stats.medCount}
               doseCount={stats.doseCount}
               warningCount={stats.warningCount}
+              recommendCount={stats.recommendCount}
               interactionTier={interactionTier}
               interactionLabelKo={interactionLabelKo}
             />

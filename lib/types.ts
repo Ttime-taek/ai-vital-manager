@@ -18,6 +18,8 @@ export interface MedicationInfo {
   defaultFrequency: 1 | 2 | 3 | 4;
   foodTiming: FoodTiming;
   avoidFoods: FoodInteraction[];
+  /** 함께 섭취하면 도움이 되는 음식·식습관 (severity: high=적극 권장) */
+  recommendedFoods?: FoodInteraction[];
   notes?: string;
 }
 

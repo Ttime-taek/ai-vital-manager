@@ -1,4 +1,4 @@
-import { Pill, Clock, AlertTriangle, ShieldAlert } from "lucide-react";
+import { Pill, Clock, AlertTriangle, ShieldAlert, Leaf } from "lucide-react";
 import type { InteractionTier } from "@/lib/interactionTypes";
 import { INTERACTION_TIER_LABEL_KO } from "@/lib/interactionLabels";
 
@@ -6,6 +6,7 @@ interface StatsBarProps {
   medCount: number;
   doseCount: number;
   warningCount: number;
+  recommendCount: number;
   interactionTier?: InteractionTier | null;
   interactionLabelKo?: string;
 }
@@ -20,6 +21,7 @@ export function StatsBar({
   medCount,
   doseCount,
   warningCount,
+  recommendCount,
   interactionTier,
   interactionLabelKo,
 }: StatsBarProps) {
@@ -46,10 +48,17 @@ export function StatsBar({
     },
     {
       icon: AlertTriangle,
-      label: "주의 음식",
+      label: "피할 음식",
       value: warningCount,
       unit: "건",
       tone: "from-amber-500 to-rose-500",
+    },
+    {
+      icon: Leaf,
+      label: "추천 식습관",
+      value: recommendCount,
+      unit: "건",
+      tone: "from-emerald-500 to-teal-600",
     },
   ];
 

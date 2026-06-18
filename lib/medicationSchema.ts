@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { MedicationInfo } from "@/lib/types";
+import type { FoodInteraction, MedicationInfo } from "@/lib/types";
 
 const SeveritySchema = z.enum(["high", "medium", "low"]);
 const FoodTimingSchema = z.enum(["before", "with", "after", "any"]);
@@ -18,6 +18,7 @@ export const MedicationInfoSchema = z.object({
   defaultFrequency: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
   foodTiming: FoodTimingSchema,
   avoidFoods: z.array(FoodInteractionSchema),
+  recommendedFoods: z.array(FoodInteractionSchema).optional(),
   notes: z.string().optional(),
 });
 
@@ -48,9 +49,9 @@ function coerceSeverity(v: unknown): "high" | "medium" | "low" {
   return (["high", "medium", "low"] as const).find((t) => t === v) ?? "medium";
 }
 
-function coerceAvoidFoods(v: unknown): MedicationInfo["avoidFoods"] {
+function coerceFoodList(v: unknown): FoodInteraction[] {
   if (!Array.isArray(v)) return [];
-  const out: MedicationInfo["avoidFoods"] = [];
+  const out: FoodInteraction[] = [];
   for (const item of v.slice(0, 20)) {
     if (typeof item !== "object" || !item) continue;
     const obj = item as Record<string, unknown>;
@@ -64,6 +65,14 @@ function coerceAvoidFoods(v: unknown): MedicationInfo["avoidFoods"] {
     });
   }
   return out;
+}
+
+function coerceAvoidFoods(v: unknown): MedicationInfo["avoidFoods"] {
+  return coerceFoodList(v);
+}
+
+function coerceRecommendedFoods(v: unknown): NonNullable<MedicationInfo["recommendedFoods"]> {
+  return coerceFoodList(v);
 }
 
 /**
@@ -84,6 +93,7 @@ export function coerceMedicationInfoFromUnknown(
     defaultFrequency: coerceFrequency(obj.defaultFrequency),
     foodTiming: coerceFoodTiming(obj.foodTiming),
     avoidFoods: coerceAvoidFoods(obj.avoidFoods),
+    recommendedFoods: coerceRecommendedFoods(obj.recommendedFoods),
     notes: trimAndLimit(obj.notes, 240) || undefined,
   };
 
@@ -98,6 +108,7 @@ export function coerceMedicationInfoFromUnknown(
     defaultFrequency: 2,
     foodTiming: "with",
     avoidFoods: [],
+    recommendedFoods: [],
     notes: "AI 응답 형식이 불안정하여 안전한 기본값으로 표시했습니다. 처방전/약사 안내를 우선하세요.",
   };
 }

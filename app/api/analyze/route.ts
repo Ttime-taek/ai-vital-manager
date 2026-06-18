@@ -74,9 +74,43 @@ const FALLBACK_INFO = (name: string): MedicationInfo => ({
       severity: "medium",
     },
   ],
+  recommendedFoods: [
+    {
+      food: "규칙적인 식사와 함께 복용",
+      reason: "위장 부작용을 줄이고 약 효과를 안정적으로 유지하는 일반적 원칙입니다.",
+      severity: "medium",
+    },
+    {
+      food: "처방·약사 안내에 맞는 식사 시간",
+      reason: "식전/식후/공복 등 복용법에 맞추면 흡수와 효과가 달라질 수 있습니다.",
+      severity: "high",
+    },
+  ],
   notes:
     "AI 또는 로컬 DB에서 정보를 찾지 못했습니다. 처방전과 약국 안내문을 우선 따르세요.",
 });
+
+const AI_MEDICATION_JSON_SCHEMA = `{
+  "name": string,
+  "aliases": string[],
+  "category": string,
+  "description": string,
+  "defaultFrequency": 1 | 2 | 3 | 4,
+  "foodTiming": "before" | "with" | "after" | "any",
+  "avoidFoods": [
+    { "food": string, "reason": string, "severity": "high" | "medium" | "low" }
+  ],
+  "recommendedFoods": [
+    { "food": string, "reason": string, "severity": "high" | "medium" | "low" }
+  ],
+  "notes": string
+}`;
+
+const AI_MEDICATION_RULES = `- 사용자가 한국어/영어/상품명/일반명 어떤 것을 입력해도 표준 약물로 매칭하여 응답.
+- avoidFoods: 식이 상호작용·피해야 할 음식 (자몽, 우유, 알코올, 비타민K 급변 등). 확실한 항목만.
+- recommendedFoods: 함께 섭취·식습관으로 도움이 되는 항목 (식사와 함께, 공복 복용 후 식사, 저지방 단백질 등). severity는 high=적극 권장.
+- 의학적 확신이 없으면 추측하지 말고 description/notes에 "약사 확인 필요" 명시.
+- 한국 사용자를 가정하여 한국어로 작성.`;
 
 interface AnalyzeBody {
   query: string;
@@ -188,24 +222,10 @@ async function analyzeWithGemini(
 반드시 유효한 JSON만 출력하세요. 마크다운, 주석, 추가 설명 금지.
 
 스키마:
-{
-  "name": string,                  // 표준 한국어 약물명
-  "aliases": string[],             // 국내 흔한 상품명/별칭/영문명
-  "category": string,              // 약물 분류 (예: "혈압강하제 (ARB)")
-  "description": string,           // 한국어 1~2문장 설명
-  "defaultFrequency": 1 | 2 | 3 | 4, // 일반적인 하루 복용 횟수
-  "foodTiming": "before" | "with" | "after" | "any",
-  "avoidFoods": [
-    { "food": string, "reason": string, "severity": "high" | "medium" | "low" }
-  ],
-  "notes": string                  // 복약 시 추가 주의사항 (선택)
-}
+${AI_MEDICATION_JSON_SCHEMA}
 
 규칙:
-- 사용자가 한국어/영어/상품명/일반명 어떤 것을 입력해도 표준 약물로 매칭하여 응답.
-- 식이 상호작용이 명확히 알려진 항목만 avoidFoods에 포함 (자몽, 우유, 알코올, 비타민K 등).
-- 의학적 확신이 없으면 추측하지 말고 description/notes에 "약사 확인 필요" 명시.
-- 한국 사용자를 가정하여 한국어로 작성.`;
+${AI_MEDICATION_RULES}`;
 
   const userPrompt = `약물명: ${query}`;
 
@@ -269,22 +289,10 @@ async function analyzeWithCerebras(query: string): Promise<MedicationInfo> {
 반드시 유효한 JSON만 출력하세요. 마크다운, 주석, 추가 설명 금지.
 
 스키마:
-{
-  "name": string,
-  "aliases": string[],
-  "category": string,
-  "description": string,
-  "defaultFrequency": 1 | 2 | 3 | 4,
-  "foodTiming": "before" | "with" | "after" | "any",
-  "avoidFoods": [
-    { "food": string, "reason": string, "severity": "high" | "medium" | "low" }
-  ],
-  "notes": string
-}
+${AI_MEDICATION_JSON_SCHEMA}
 
 규칙:
-- 확신이 없으면 추측하지 말고 "약사 확인 필요"를 명시.
-- 한국 사용자를 가정하여 한국어로 작성.`;
+${AI_MEDICATION_RULES}`;
 
   const userPrompt = `약물명: ${query}`;
 

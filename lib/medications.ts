@@ -1,4 +1,4 @@
-import type { MedicationInfo } from "./types";
+import type { FoodInteraction, MedicationInfo } from "@/lib/types";
 
 /**
  * 흔히 처방되는 약물에 대한 로컬 지식 베이스.
@@ -7,6 +7,79 @@ import type { MedicationInfo } from "./types";
  * 주의: 본 데이터는 일반적인 참고용 정보이며, 실제 복약 지시는
  * 반드시 의사 또는 약사의 처방·지도를 따라야 합니다.
  */
+
+/** GLP-1/GIP 비만·체중관리 주사제 공통 식이 가이드 */
+const GLP1_AVOID_FOODS: FoodInteraction[] = [
+  {
+    food: "튀김·기름진 음식·고지방 식사",
+    reason: "구역, 구토, 복통·설사 등 위장 부작용이 크게 악화될 수 있습니다.",
+    severity: "high",
+  },
+  {
+    food: "과식·한 번에 많은 양",
+    reason: "위장이 느려진 상태에서 과식하면 메스꺼움과 더부룩함이 심해집니다.",
+    severity: "high",
+  },
+  {
+    food: "알코올 (술)",
+    reason: "위장 자극·어지러움이 심해지고, 당뇨약 병용 시 저혈당 위험이 있습니다.",
+    severity: "high",
+  },
+  {
+    food: "단 음료·과자·디저트 (다량)",
+    reason: "체중 관리 목표와 맞지 않고, 혈당 변동·위장 불편을 키울 수 있습니다.",
+    severity: "medium",
+  },
+  {
+    food: "탄산음료 + 과식",
+    reason: "복부 팽만감과 트림·구역이 심해질 수 있습니다.",
+    severity: "medium",
+  },
+  {
+    food: "공복에 기름진·매운 음식",
+    reason: "공복 상태에서 자극적인 음식은 구토·속쓰림을 유발하기 쉽습니다.",
+    severity: "medium",
+  },
+];
+
+const GLP1_RECOMMENDED_FOODS: FoodInteraction[] = [
+  {
+    food: "저지방 고단백 (닭가슴살·생선·두부·삶은 계란)",
+    reason: "포만감을 유지하면서 위장 부담이 적고, 근손실을 줄이는 데 도움이 됩니다.",
+    severity: "high",
+  },
+  {
+    food: "채소·샐러드 (소량씩, 기름진 드레싱은 피하기)",
+    reason: "부피는 채우되 칼로리는 낮게 유지해 식욕 조절을 돕습니다.",
+    severity: "high",
+  },
+  {
+    food: "소량·자주 나눠 먹기 (하루 3~5끼)",
+    reason: "한 번에 많이 먹지 않으면 구역·복부 팽만감을 줄일 수 있습니다.",
+    severity: "high",
+  },
+  {
+    food: "물·수분 (하루 1.5~2L 권장)",
+    reason: "구토·설사 시 탈수를 막고, 포만감 유지에도 도움이 됩니다.",
+    severity: "high",
+  },
+  {
+    food: "구역 시 담백한 식품 (쌀죽·건빵·바나나 소량)",
+    reason: "위가 예민할 때 자극이 적어 속이 편합니다.",
+    severity: "medium",
+  },
+  {
+    food: "통곡물·현미 (소량)",
+    reason: "혈당을 천천히 올려 에너지를 안정적으로 유지합니다.",
+    severity: "medium",
+  },
+  {
+    food: "천천히 꼭꼭 씹어 먹기",
+    reason: "포만 신호를 빨리 느끼고, 소화 부담을 줄입니다.",
+    severity: "low",
+  },
+];
+
 export const MEDICATION_DATABASE: MedicationInfo[] = [
   {
     name: "아세트아미노펜",
@@ -95,6 +168,23 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
         severity: "high",
       },
     ],
+    recommendedFoods: [
+      {
+        food: "매일 비슷한 양의 비타민 K 채소",
+        reason: "완전히 피하기보다 '일정한 섭취량'을 유지하는 것이 INR 안정에 중요합니다.",
+        severity: "high",
+      },
+      {
+        food: "규칙적인 식사 시간·패턴",
+        reason: "갑작스런 식습관 변화는 약효 변동(INR)을 일으킬 수 있습니다.",
+        severity: "high",
+      },
+      {
+        food: "균형 잡힌 일반 식단 (과도한 보충제·허브는 피하기)",
+        reason: "출혈·응고 균형을 유지하는 데 도움이 됩니다.",
+        severity: "medium",
+      },
+    ],
     notes: "INR 검사 결과에 따라 용량이 조절됩니다. 자가 판단으로 식단을 급변경하지 마세요.",
   },
   {
@@ -137,6 +227,18 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
         severity: "medium",
       },
     ],
+    recommendedFoods: [
+      {
+        food: "저지방·균형 잡힌 식단",
+        reason: "스타틴은 간·근육에 영향을 줄 수 있어 건강한 식습관이 중요합니다.",
+        severity: "medium",
+      },
+      {
+        food: "콜레스테롤 관리에 도움 되는 식품 (귀리·견과류·등푸른생선)",
+        reason: "약물 효과를 보조해 LDL 콜레스테롤 관리에 도움이 됩니다.",
+        severity: "medium",
+      },
+    ],
     notes: "보통 저녁 또는 취침 전 복용 시 효과가 좋습니다.",
   },
   {
@@ -158,6 +260,23 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
         severity: "medium",
       },
     ],
+    recommendedFoods: [
+      {
+        food: "규칙적인 식사와 함께 복용",
+        reason: "위장 부작용(설사·복통)을 줄이고 약 효과를 안정적으로 유지합니다.",
+        severity: "high",
+      },
+      {
+        food: "채소·단백질 중심 식단",
+        reason: "혈당·체중 관리에 유리하며 메트포르민 치료 목적과 맞습니다.",
+        severity: "medium",
+      },
+      {
+        food: "복합탄수화물·통곡물 (적정량)",
+        reason: "혈당 급등을 줄이고 포만감을 유지합니다.",
+        severity: "medium",
+      },
+    ],
     notes: "위장 부작용을 줄이기 위해 식사와 함께 복용하세요.",
   },
   {
@@ -172,6 +291,18 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
         food: "탄산음료, 매운 음식, 카페인",
         reason: "위산 분비를 자극해 약효를 떨어뜨립니다.",
         severity: "low",
+      },
+    ],
+    recommendedFoods: [
+      {
+        food: "식전 30분~1시간 전 복용 + 가벼운 식사",
+        reason: "위산 억제 효과를 극대화하는 복용 패턴입니다.",
+        severity: "high",
+      },
+      {
+        food: "자극적이지 않은 식단 (매운·기름진 음식 줄이기)",
+        reason: "위염·역류 증상 완화와 약효 유지에 도움이 됩니다.",
+        severity: "medium",
       },
     ],
     notes: "식전 30분~1시간 전 복용이 가장 효과적입니다.",
@@ -202,6 +333,23 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
       {
         food: "철분제·칼슘제 보충제",
         reason: "복용 간격을 4시간 이상 두어야 합니다.",
+        severity: "high",
+      },
+    ],
+    recommendedFoods: [
+      {
+        food: "기상 직후 공복 + 물 한 잔",
+        reason: "흡수율이 가장 좋은 복용 방법입니다.",
+        severity: "high",
+      },
+      {
+        food: "복용 30~60분 후 균형 잡힌 아침 식사",
+        reason: "공복 복용 후 적절한 영양 섭취로 하루 컨디션을 유지합니다.",
+        severity: "medium",
+      },
+      {
+        food: "칼슘·철분·섬유질 보충제는 4시간 이상 간격",
+        reason: "같이 먹으면 갑상선호르몬 흡수가 크게 떨어집니다.",
         severity: "high",
       },
     ],
@@ -472,18 +620,8 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
       "비만·체중 관리를 위해 하루 1회 피하 주사로 사용하는 GLP-1 유사체입니다. 식욕 억제와 체중 감량 보조 목적의 처방약입니다.",
     defaultFrequency: 1,
     foodTiming: "any",
-    avoidFoods: [
-      {
-        food: "고지방·과식",
-        reason: "구역, 구토, 설사 등 위장 부작용이 심해질 수 있습니다.",
-        severity: "medium",
-      },
-      {
-        food: "알코올 (술)",
-        reason: "위장 자극과 어지러움이 심해질 수 있으며, 당뇨약과 병용 시 저혈당 위험이 있습니다.",
-        severity: "medium",
-      },
-    ],
+    avoidFoods: GLP1_AVOID_FOODS,
+    recommendedFoods: GLP1_RECOMMENDED_FOODS,
     notes:
       "매일 비슷한 시간에 주사합니다. 개봉 전 냉장 보관이 필요합니다. 용량은 의사 지시에 따라 점진적으로 올립니다. 임신·수유 중에는 사용하지 않습니다.",
   },
@@ -501,18 +639,8 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
       "비만·체중 관리를 위해 주 1회 피하 주사로 사용하는 GLP-1 유사체입니다. 식욕 조절과 체중 감량을 돕는 처방약입니다.",
     defaultFrequency: 1,
     foodTiming: "any",
-    avoidFoods: [
-      {
-        food: "고지방·과식",
-        reason: "구역, 구토, 복부 불편감 등 위장 부작용이 악화될 수 있습니다.",
-        severity: "medium",
-      },
-      {
-        food: "알코올 (술)",
-        reason: "위장 증상과 어지러움이 심해질 수 있으며, 인슐린·설포닐우레아 등과 병용 시 저혈당에 주의해야 합니다.",
-        severity: "medium",
-      },
-    ],
+    avoidFoods: GLP1_AVOID_FOODS,
+    recommendedFoods: GLP1_RECOMMENDED_FOODS,
     notes:
       "매주 같은 요일·비슷한 시간에 주사합니다. 식전·식후와 관계없이 투여 가능합니다. 개봉 전 냉장 보관, 개봉 후 사용 기한을 지키세요. 당뇨 치료용 오젬픽(저용량)과 용도·용량이 다릅니다.",
   },
@@ -532,18 +660,8 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
       "비만·체중 관리를 위해 주 1회 피하 주사로 사용하는 GIP·GLP-1 이중 작용제입니다. 식욕 억제와 체중 감량 보조에 쓰입니다.",
     defaultFrequency: 1,
     foodTiming: "any",
-    avoidFoods: [
-      {
-        food: "고지방·과식",
-        reason: "구역, 구토, 설사 등 위장 부작용이 두드러질 수 있습니다.",
-        severity: "medium",
-      },
-      {
-        food: "알코올 (술)",
-        reason: "위장 증상 악화 및 당뇨약 병용 시 저혈당 위험이 있습니다.",
-        severity: "medium",
-      },
-    ],
+    avoidFoods: GLP1_AVOID_FOODS,
+    recommendedFoods: GLP1_RECOMMENDED_FOODS,
     notes:
       "매주 같은 날 주사합니다. 용량은 처방에 따라 단계적으로 증량합니다. 개봉 전 냉장 보관이 필요합니다. 췌장염(지속 복통) 증상 시 즉시 진료를 받으세요.",
   },
