@@ -1,4 +1,4 @@
-import type { MedicationInfo } from "@/lib/types";
+import type { FoodInteraction, MedicationInfo } from "@/lib/types";
 import { isLowConfidenceMedicationInfo } from "@/lib/medicationConfidence";
 import type { MedicationWebContext } from "@/lib/medicationWebSearch";
 
@@ -9,6 +9,78 @@ export type AnalyzeSource =
   | "ai_web"
   | "uncertain"
   | "fallback";
+
+const SEVERITY_RANK = { high: 3, medium: 2, low: 1 } as const;
+
+function foodKey(food: string): string {
+  return food.replace(/\s+/g, "").toLowerCase();
+}
+
+function mergeFoodList(base: FoodInteraction[], extra: FoodInteraction[]): FoodInteraction[] {
+  const map = new Map<string, FoodInteraction>();
+  for (const item of base) {
+    map.set(foodKey(item.food), item);
+  }
+  for (const item of extra) {
+    const key = foodKey(item.food);
+    const prev = map.get(key);
+    if (!prev) {
+      map.set(key, item);
+      continue;
+    }
+    const keep =
+      SEVERITY_RANK[item.severity] >= SEVERITY_RANK[prev.severity] ? item : prev;
+    const reason =
+      keep.reason.length >= prev.reason.length ? keep.reason : prev.reason;
+    map.set(key, { ...keep, reason });
+  }
+  return [...map.values()];
+}
+
+/** 로컬 DB를 유지하면서 AI·웹에서 얻은 식이 항목만 보강 */
+export function mergeMedicationInfo(
+  local: MedicationInfo,
+  ai: MedicationInfo,
+): MedicationInfo {
+  const description =
+    ai.description.length > local.description.length + 20 &&
+    !/약사\s*확인|확인\s*필요/i.test(ai.description)
+      ? ai.description
+      : local.description;
+
+  const notes =
+    ai.notes && local.notes && ai.notes.length > local.notes.length + 15
+      ? ai.notes
+      : local.notes ?? ai.notes;
+
+  return {
+    ...local,
+    name: local.name,
+    aliases: [...new Set([...local.aliases, ...ai.aliases])],
+    category: local.category !== "확인 필요" ? local.category : ai.category,
+    description,
+    defaultFrequency: local.defaultFrequency,
+    foodTiming: local.foodTiming,
+    avoidFoods: mergeFoodList(local.avoidFoods, ai.avoidFoods),
+    recommendedFoods: mergeFoodList(
+      local.recommendedFoods ?? [],
+      ai.recommendedFoods ?? [],
+    ),
+    notes,
+  };
+}
+
+function countUniqueFoodItems(local: MedicationInfo, ai: MedicationInfo): number {
+  const localKeys = new Set([
+    ...local.avoidFoods.map((f) => foodKey(f.food)),
+    ...(local.recommendedFoods ?? []).map((f) => foodKey(f.food)),
+  ]);
+  let added = 0;
+  for (const f of [...ai.avoidFoods, ...(ai.recommendedFoods ?? [])]) {
+    if (!localKeys.has(foodKey(f.food))) added += 1;
+  }
+  return added;
+}
 
 export function scoreMedicationInfo(info: MedicationInfo): number {
   let score = 0;
@@ -26,11 +98,20 @@ export function shouldPreferAiOverLocal(
   local: MedicationInfo,
   ai: MedicationInfo,
   query: string,
+  webUsed = false,
 ): boolean {
   if (isLowConfidenceMedicationInfo(ai, query)) return false;
 
   const localScore = scoreMedicationInfo(local);
   const aiScore = scoreMedicationInfo(ai);
+  const merged = mergeMedicationInfo(local, ai);
+  const mergedScore = scoreMedicationInfo(merged);
+
+  if (mergedScore >= localScore + 2) return true;
+
+  if (webUsed && countUniqueFoodItems(local, ai) >= 1 && mergedScore > localScore) {
+    return true;
+  }
 
   if (aiScore >= localScore + 2) return true;
 
@@ -64,7 +145,7 @@ ${localBlock}
 
 위 자료를 종합해 MedicationInfo JSON을 작성하세요.
 - 웹/라벨 정보가 로컬 DB보다 구체적이거나 식이 가이드가 더 풍부하면 웹 정보를 우선 반영하세요.
-- 로컬 DB가 충분하고 웹에 신뢰할 근거가 없으면 DB 내용을 유지해도 됩니다.
+- 로컬 DB가 충분하면 기존 항목을 유지하고, 웹에서 근거 있는 새 식이 상호작용만 추가하세요.
 - 확실하지 않은 식이 상호작용은 넣지 마세요.`;
 }
 
@@ -90,15 +171,16 @@ export function resolveAnalyzeOutcome(opts: {
       };
     }
 
-    if (shouldPreferAiOverLocal(local, ai, query)) {
+    if (shouldPreferAiOverLocal(local, ai, query, webUsed)) {
+      const enriched = mergeMedicationInfo(local, ai);
       const noticeParts = [
         webUsed
-          ? "웹 검색과 AI로 로컬 DB보다 더 풍부한 정보를 반영했습니다."
+          ? "웹 검색과 AI로 로컬 DB 식이 가이드를 보강했습니다."
           : "AI가 로컬 DB보다 더 구체적인 정보를 제공해 반영했습니다.",
         providerFallbackNotice,
       ].filter(Boolean);
       return {
-        info: ai,
+        info: enriched,
         source: "database_enriched",
         notice: noticeParts.join(" "),
       };

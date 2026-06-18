@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
   let web: MedicationWebContext | null = null;
   if (isMedicationWebSearchEnabled()) {
     try {
-      web = await searchMedicationWebContext(query);
+      web = await searchMedicationWebContext(query, local);
     } catch (err) {
       console.error("[analyze] web search error:", err);
     }

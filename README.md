@@ -90,13 +90,15 @@ Production / Preview / Development 모두에 동일하게 넣은 뒤 **Redeploy*
 ### `.env.local` → Vercel 일괄 동기화 (Windows)
 
 ```powershell
-npx vercel login
-npx vercel link    # ai-vital-manager-xmi5 프로젝트 선택
+# Windows: npx vercel 이 "Could not determine Node.js install directory" 로 실패할 수 있음
+powershell -ExecutionPolicy Bypass -File .\scripts\vercel-setup.ps1   # login + link (1회)
 powershell -ExecutionPolicy Bypass -File .\scripts\sync-vercel-env.ps1
-npx vercel --prod  # 또는 Dashboard에서 Redeploy
+# 또는: .\scripts\sync-vercel-env.bat
 ```
 
-`sync-vercel-env.ps1`은 `.env.local`의 AI·웹 검색 키(`SERPER_API_KEY`, `TAVILY_API_KEY` 포함)를 Vercel에 반영합니다.
+`vercel-setup.ps1` — 브라우저 로그인 후 `ai-vital-manager-xmi5` 프로젝트 연결  
+`sync-vercel-env.ps1` — `.env.local`의 AI·웹 검색 키(`SERPER_API_KEY`, `TAVILY_API_KEY` 포함)를 Vercel에 반영  
+배포는 GitHub push 자동 배포 또는 Vercel Dashboard → Deployments → Redeploy
 
 ### 배포 후 확인 (스모크 테스트)
 

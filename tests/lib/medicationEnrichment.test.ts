@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  mergeMedicationInfo,
   resolveAnalyzeOutcome,
   scoreMedicationInfo,
   shouldPreferAiOverLocal,
 } from "@/lib/medicationEnrichment";
+import { buildWebSearchTerms } from "@/lib/medicationWebSearch";
 import type { MedicationInfo } from "@/lib/types";
 
 const localRich: MedicationInfo = {
@@ -50,6 +52,29 @@ describe("medicationEnrichment", () => {
     });
     expect(out.source).toBe("database");
     expect(out.info.name).toBe("위고비");
+  });
+
+  it("prefers enrichment when web adds unique foods to rich local DB", () => {
+    const aiWithExtra: MedicationInfo = {
+      ...localRich,
+      avoidFoods: [
+        ...localRich.avoidFoods,
+        { food: "매운 음식", reason: "위장 자극", severity: "high" },
+      ],
+    };
+    expect(shouldPreferAiOverLocal(localRich, aiWithExtra, "위고비", true)).toBe(true);
+  });
+
+  it("merges local and AI foods without dropping DB items", () => {
+    const merged = mergeMedicationInfo(localRich, aiRicher);
+    expect(merged.avoidFoods.length).toBeGreaterThanOrEqual(localRich.avoidFoods.length);
+    expect(merged.name).toBe("위고비");
+  });
+
+  it("builds search terms from local aliases", () => {
+    const terms = buildWebSearchTerms("위고비", localRich);
+    expect(terms).toContain("위고비");
+    expect(terms.some((t) => /wegovy/i.test(t))).toBe(true);
   });
 
   it("upgrades local when AI wins", () => {
