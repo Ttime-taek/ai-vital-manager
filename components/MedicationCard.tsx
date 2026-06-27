@@ -54,6 +54,8 @@ const RECOMMEND_STYLES: Record<
 export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
   const { info, source } = entry;
   const frequency = entry.customFrequency ?? info.defaultFrequency;
+  const displayNames =
+    info.name === "레보티록신" ? ["씬지로이드", "씬지록신"] : [];
 
   const sourceTag =
     source === "ai" || source === "ai_web"
@@ -84,6 +86,11 @@ export function MedicationCard({ entry, onRemove }: MedicationCardProps) {
             <h3 className="truncate text-base font-bold text-slate-900">
               {info.name}
             </h3>
+            {displayNames.length > 0 && (
+              <span className="text-xs font-medium text-slate-500">
+                ({displayNames.join(" · ")})
+              </span>
+            )}
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${sourceTag.className}`}
             >
