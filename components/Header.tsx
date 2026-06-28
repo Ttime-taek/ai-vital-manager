@@ -3,7 +3,7 @@ import { HeartPulse } from "lucide-react";
 export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/70 pt-safe backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-page py-3 sm:py-4">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-2 px-page py-3 sm:py-4">
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#0f766e_0%,#14b8a6_55%,#34d399_100%)] text-white shadow-soft ring-1 ring-white/60 sm:h-10 sm:w-10">
             <HeartPulse className="h-4 w-4 sm:h-5 sm:w-5" />

@@ -192,7 +192,7 @@ export default function HomePage() {
       <Header />
 
       <main
-        className={`mx-auto max-w-6xl space-y-5 px-page py-5 sm:space-y-6 sm:py-8 ${
+        className={`mx-auto max-w-[1440px] space-y-5 px-page py-5 sm:space-y-6 sm:py-8 ${
           showMobileSticky
             ? "pb-[calc(7rem+env(safe-area-inset-bottom,0px))] md:pb-8"
             : "pb-safe"
