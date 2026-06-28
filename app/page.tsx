@@ -13,7 +13,6 @@ import { EmptyState } from "@/components/EmptyState";
 import { DrugInteractionChecker, type DrugInteractionCheckerHandle } from "@/components/DrugInteractionChecker";
 import { SafetyChecker } from "@/components/SafetyChecker";
 import { buildSchedule, getSlotsForFrequency } from "@/lib/scheduleEngine";
-import { loadStoredMeds, saveStoredMeds } from "@/lib/medsStorage";
 import type { InteractionTier } from "@/lib/interactionTypes";
 import type { MedicationEntry, MedicationInfo } from "@/lib/types";
 
@@ -26,7 +25,6 @@ interface AnalyzeResponse {
 
 export default function HomePage() {
   const [meds, setMeds] = useState<MedicationEntry[]>([]);
-  const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSafety, setShowSafety] = useState(false);
   const [aiNotice, setAiNotice] = useState<string | null>(null);
@@ -40,14 +38,9 @@ export default function HomePage() {
   } | null>(null);
 
   useEffect(() => {
-    setMeds(loadStoredMeds());
-    setHydrated(true);
+    window.localStorage.removeItem("vp:meds:v1");
+    setMeds([]);
   }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    saveStoredMeds(meds);
-  }, [meds, hydrated]);
 
   const showToast = (
     message: string,
