@@ -53,7 +53,7 @@ export function MedicationInput({
             type="button"
             onClick={onReset}
             disabled={loading || !canReset}
-            className="inline-flex h-10 shrink-0 items-center gap-1 self-start rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-ring disabled:cursor-not-allowed disabled:opacity-40 sm:text-[11px]"
+            className="inline-flex h-10 shrink-0 items-center gap-1 self-start rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 focus-ring disabled:cursor-not-allowed disabled:opacity-40"
           >
             <RotateCcw className="h-3 w-3" />
             초기화
@@ -93,7 +93,7 @@ export function MedicationInput({
         </button>
       </div>
 
-      <p className="mt-2.5 rounded-lg border border-brand-100 bg-brand-50/80 px-3 py-2 text-xs leading-relaxed text-brand-900 sm:text-[11px]">
+      <p className="mt-2.5 rounded-lg border border-brand-100 bg-brand-50/80 px-3 py-2 text-xs leading-relaxed text-brand-900">
         <span className="font-semibold">Tip</span> 추가 후 검색창이 비워지면 다음 약을 이어서 넣을 수 있습니다. 2개
         이상이면 상호작용도 자동 확인됩니다.
       </p>
