@@ -251,19 +251,38 @@ describe("/api/analyze", () => {
     process.env.GEMINI_API_KEY = "test";
     process.env.MEDICATION_WEB_SEARCH = "0";
     vi.useFakeTimers();
-    globalThis.fetch = vi.fn(async (_url: any, init: any) => {
-        const signal: AbortSignal | undefined = init?.signal;
-        if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-        await new Promise<void>((_resolve, reject) => {
-          signal?.addEventListener("abort", () =>
-            reject(new DOMException("Aborted", "AbortError")),
-          );
-        });
-        return new Response("never", { status: 200 });
+    let markGenerationStarted!: () => void;
+    const generationStarted = new Promise<void>((resolve) => {
+      markGenerationStarted = resolve;
+    });
+    globalThis.fetch = vi.fn(async (url: any, init: any) => {
+      if (String(url).includes("/models?")) {
+        return new Response(
+          JSON.stringify({
+            models: [
+              {
+                name: "models/gemini-1.5-flash",
+                supportedGenerationMethods: ["generateContent"],
+              },
+            ],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      markGenerationStarted();
+      const signal: AbortSignal | undefined = init?.signal;
+      if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+      await new Promise<void>((_resolve, reject) => {
+        signal?.addEventListener("abort", () =>
+          reject(new DOMException("Aborted", "AbortError")),
+        );
+      });
+      return new Response("never", { status: 200 });
     }) as typeof fetch;
 
     const pending = POST(makeReq({ query: "timeoutDrug" }, "5.5.5.5"));
-    await vi.advanceTimersByTimeAsync!(11_000);
+    await generationStarted;
+    await vi.advanceTimersByTimeAsync!(16_000);
     const res = await pending;
     expect(res.status).toBe(200);
     const json = await readJson(res);
@@ -272,4 +291,3 @@ describe("/api/analyze", () => {
   },
   );
 });
-
