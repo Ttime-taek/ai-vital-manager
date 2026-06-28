@@ -101,7 +101,7 @@ export function MedicationInput({
       <MedicationScanPanel onAdd={onAdd} loading={loading} />
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <span className="w-full text-[10px] font-medium uppercase tracking-wide text-slate-400">
+        <span className="w-full text-xs font-medium text-slate-500">
           빠른 추가
         </span>
         {SUGGESTIONS.map((s) => (
@@ -110,7 +110,7 @@ export function MedicationInput({
             type="button"
             onClick={() => onAdd(s)}
             disabled={loading}
-            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-ring disabled:opacity-50"
+            className="min-h-11 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-ring disabled:opacity-50"
           >
             {s}
           </button>
