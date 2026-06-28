@@ -31,6 +31,14 @@ export const MOCK_INTERACTION_RULES_V0: MockInteractionPairRule[] = [
       "항혈소판 성분과 항응고제 병용은 출혈 위험을 크게 높일 수 있어 원칙적으로 동시 사용을 피하고, 필요 시 전문의가 위험·대안을 평가합니다.",
   },
   {
+    ruleId: "warfarin_omega3",
+    drugA: "와파린",
+    drugB: "오메가3",
+    tier: "caution",
+    summaryKo:
+      "와파린과 오메가3를 함께 복용하면 출혈 위험이 증가할 수 있습니다. 복용 전 의사 또는 약사와 상담하세요.",
+  },
+  {
     ruleId: "warfarin_ibuprofen",
     drugA: "와파린",
     drugB: "이부프로펜",

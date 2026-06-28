@@ -158,10 +158,12 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
             </p>
           </div>
           <div className="space-y-2">
-            {norm.candidates.map((c) => (
+            {norm.candidates.map((c, index) => (
               <button
                 key={c.id}
                 type="button"
+                autoFocus={index === 0}
+                aria-label={`${c.name}, 신뢰도 ${Math.round(c.confidence * 100)}%, 종류 ${c.kind}`}
                 onClick={() => {
                   setSelected((prev) => ({
                     ...prev,
