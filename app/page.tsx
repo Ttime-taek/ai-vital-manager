@@ -207,6 +207,32 @@ export default function HomePage() {
       >
         <AiStatusBanner message={aiNotice} onDismiss={() => setAiNotice(null)} />
 
+        <section className="overflow-hidden rounded-[28px] border border-brand-100 bg-white/85 p-section shadow-soft ring-1 ring-brand-50">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0 max-w-3xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-600">
+                복약 운영판
+              </p>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+                약을 넣는 순간 일정, 주의 음식, 함께 먹는 습관이 같이 정리됩니다.
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                복잡한 약 이름보다 하루의 흐름이 먼저 보이도록 만든 건강 관리 화면입니다.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {["복용 시간", "음식 주의", "상호작용", "한글 검색"].map((label) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="space-y-3">

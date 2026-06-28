@@ -14,6 +14,11 @@ html {
 html,
 body {
   background-color: rgb(var(--background));
+  background-image:
+    linear-gradient(180deg, rgba(20, 184, 166, 0.08) 0%, rgba(20, 184, 166, 0) 18%),
+    linear-gradient(135deg, rgba(15, 118, 110, 0.04) 0%, rgba(15, 118, 110, 0) 38%),
+    linear-gradient(180deg, rgb(var(--background)) 0%, #ffffff 54%, rgb(240, 253, 250) 100%);
+  background-attachment: fixed;
   color: rgb(var(--foreground));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
