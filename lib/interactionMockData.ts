@@ -39,6 +39,14 @@ export const MOCK_INTERACTION_RULES_V0: MockInteractionPairRule[] = [
       "와파린과 오메가3를 함께 복용하면 출혈 위험이 증가할 수 있습니다. 복용 전 의사 또는 약사와 상담하세요.",
   },
   {
+    ruleId: "warfarin_acetaminophen",
+    drugA: "와파린",
+    drugB: "아세트아미노펜",
+    tier: "caution",
+    summaryKo:
+      "와파린과 아세트아미노펜은 함께 복용할 때 INR 상승과 출혈 위험 증가가 보고되어 있어, 연속 복용·고용량 복용 전에는 의사 또는 약사와 상담하는 것이 안전합니다.",
+  },
+  {
     ruleId: "warfarin_ibuprofen",
     drugA: "와파린",
     drugB: "이부프로펜",
