@@ -20,6 +20,13 @@ describe("checkDrugInteractions", () => {
     expect(r.tier).toBe("contraindicated");
   });
 
+  it("flags 와파린 + 타이레놀 as caution", () => {
+    const r = checkDrugInteractions(["와파린", "타이레놀"], MOCK_INTERACTION_RULES_V0);
+    expect(r.resolvedDrugs).toEqual(["와파린", "아세트아미노펜"]);
+    expect(r.tier).toBe("caution");
+    expect(r.hits).toHaveLength(1);
+  });
+
   it("returns very_safe for unrelated pair", () => {
     const r = checkDrugInteractions(["아세트아미노펜", "아스피린"], MOCK_INTERACTION_RULES_V0);
     expect(r.tier).toBe("very_safe");
