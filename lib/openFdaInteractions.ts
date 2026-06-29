@@ -1,4 +1,5 @@
 import type { InteractionCheckResult, InteractionRuleHit, InteractionTier } from "@/lib/interactionTypes";
+import { findMedication } from "@/lib/medications";
 
 type RxNavApproximateResponse = {
   approximateGroup?: {
@@ -28,8 +29,14 @@ type OpenFdaLabelResponse = {
   }>;
 };
 
+const MIN_RXNAV_SCORE = 8;
+
 function normalize(s: string) {
   return s.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function hasLatinLetters(s: string) {
+  return /[a-z]/i.test(s);
 }
 
 function uniqNonEmpty(items: Array<string | undefined | null>) {
@@ -61,8 +68,37 @@ async function resolveRxcuiApprox(term: string): Promise<{ rxcui: string; name?:
   const cands = data.approximateGroup?.candidate ?? [];
   const top = cands[0];
   const rxcui = top?.rxcui;
-  if (!rxcui) return null;
+  const score = Number(top?.score ?? "0");
+  if (!rxcui || !Number.isFinite(score) || score < MIN_RXNAV_SCORE) return null;
   return { rxcui, name: top?.name };
+}
+
+function getRxNormSearchTerms(input: string) {
+  const raw = input.trim();
+  const med = findMedication(raw);
+  const terms: string[] = [];
+
+  const push = (value?: string | null) => {
+    const term = (value ?? "").trim();
+    if (!term || !hasLatinLetters(term) || terms.includes(term)) return;
+    terms.push(term);
+  };
+
+  if (med) {
+    for (const alias of med.aliases) push(alias);
+  }
+  push(raw);
+
+  return terms;
+}
+
+async function resolveRxcuiApproxForInput(input: string): Promise<{ rxcui: string; name?: string } | null> {
+  const searchTerms = getRxNormSearchTerms(input);
+  for (const term of searchTerms) {
+    const resolved = await resolveRxcuiApprox(term);
+    if (resolved) return resolved;
+  }
+  return null;
 }
 
 async function fetchLatestLabelByRxcui(rxcui: string) {
@@ -143,7 +179,7 @@ export async function checkInteractionsWithOpenFda(drugNames: string[]): Promise
   const unresolved: string[] = [];
 
   for (const input of unique) {
-    const rx = await resolveRxcuiApprox(input);
+    const rx = await resolveRxcuiApproxForInput(input);
     if (!rx) {
       unresolved.push(input);
       continue;
@@ -218,4 +254,3 @@ export async function checkInteractionsWithOpenFda(drugNames: string[]): Promise
     oneLineKo,
   };
 }
-
