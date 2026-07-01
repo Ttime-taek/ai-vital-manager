@@ -34,9 +34,41 @@ describe("isLowConfidenceMedicationInfo", () => {
     ).toBe(false);
   });
 
+  it("flags unknown category when pharmacist confirmation text is present", () => {
+    expect(
+      isLowConfidenceMedicationInfo(
+        {
+          ...base,
+          category: "unknown",
+          description: "약사 확인 필요",
+          notes: "약사 확인 필요",
+        },
+        "zzzz-not-a-drug",
+      ),
+    ).toBe(true);
+  });
+
   it("blocks registering unresolved uncertain inputs", () => {
     expect(
       shouldBlockMedicationRegistration(base, "zzzz-not-a-drug", "uncertain"),
+    ).toBe(true);
+  });
+
+  it("blocks unresolved unknown category inputs from fallback providers", () => {
+    expect(
+      shouldBlockMedicationRegistration(
+        {
+          ...base,
+          name: "zzzz-not-a-drug",
+          category: "unknown",
+          description: "약사 확인 필요",
+          notes: "약사 확인 필요",
+          defaultFrequency: 1,
+          foodTiming: "any",
+        },
+        "zzzz-not-a-drug",
+        "uncertain",
+      ),
     ).toBe(true);
   });
 
