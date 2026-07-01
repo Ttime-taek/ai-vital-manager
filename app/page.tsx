@@ -12,6 +12,7 @@ import { StatsBar } from "@/components/StatsBar";
 import { EmptyState } from "@/components/EmptyState";
 import { DrugInteractionChecker, type DrugInteractionCheckerHandle } from "@/components/DrugInteractionChecker";
 import { SafetyChecker } from "@/components/SafetyChecker";
+import { shouldBlockMedicationRegistration } from "@/lib/medicationConfidence";
 import { buildSchedule, getSlotsForFrequency } from "@/lib/scheduleEngine";
 import type { InteractionTier } from "@/lib/interactionTypes";
 import type { MedicationEntry, MedicationInfo } from "@/lib/types";
@@ -91,6 +92,16 @@ export default function HomePage() {
           showToast(data.error ?? "분석에 실패했습니다.", "error");
           return;
         }
+        
+if (shouldBlockMedicationRegistration(data.info, trimmed, data.source)) {
+  showToast(
+    data.notice ??
+      `${trimmed}을(를) 정확히 식별하지 못해 등록하지 않았습니다. 처방전·약사 안내를 우선하세요.`,
+    "error",
+  );
+  return;
+}
+
 
         const entry: MedicationEntry = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
