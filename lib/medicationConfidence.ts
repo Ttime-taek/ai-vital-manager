@@ -13,16 +13,17 @@ export function isLowConfidenceMedicationInfo(
   info: MedicationInfo,
   query: string,
 ): boolean {
-  if (info.category === "확인 필요") return true;
-  if (/약사s*확인|확인s*필요|알s*수s*없/i.test(info.description)) return true;
+  if (["확인 필요", "미확인", "unknown"].includes(info.category)) return true;
+  if (/약사\s*확인|확인\s*필요|알\s*수\s*없/i.test(info.description)) return true;
+  if (info.notes && /약사\s*확인|확인\s*필요|알\s*수\s*없/i.test(info.notes)) return true;
 
-  const nq = query.replace(/s+/g, "").toLowerCase();
-  const nn = info.name.replace(/s+/g, "").toLowerCase();
+  const nq = query.replace(/\s+/g, "").toLowerCase();
+  const nn = info.name.replace(/\s+/g, "").toLowerCase();
   if (
     nn === nq &&
     info.aliases.length === 0 &&
     info.avoidFoods.length === 0 &&
-    info.category === "확인 필요"
+    ["확인 필요", "미확인", "unknown"].includes(info.category)
   ) {
     return true;
   }
