@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isLowConfidenceMedicationInfo } from "@/lib/medicationConfidence";
+import {
+  isLowConfidenceMedicationInfo,
+  shouldBlockMedicationRegistration,
+} from "@/lib/medicationConfidence";
 import type { MedicationInfo } from "@/lib/types";
 
 describe("isLowConfidenceMedicationInfo", () => {
@@ -27,6 +30,29 @@ describe("isLowConfidenceMedicationInfo", () => {
           avoidFoods: [{ food: "알코올", reason: "위장 출혈", severity: "high" }],
         },
         "ibuprofen",
+      ),
+    ).toBe(false);
+  });
+
+  it("blocks registering unresolved uncertain inputs", () => {
+    expect(
+      shouldBlockMedicationRegistration(base, "zzzz-not-a-drug", "uncertain"),
+    ).toBe(true);
+  });
+
+  it("allows confident AI results to be registered", () => {
+    expect(
+      shouldBlockMedicationRegistration(
+        {
+          ...base,
+          name: "아세트아미노펜",
+          aliases: ["타이레놀"],
+          category: "진통제",
+          description: "해열·진통에 사용하는 약입니다.",
+          avoidFoods: [{ food: "알코올", reason: "간 부담", severity: "medium" }],
+        },
+        "타이레놀",
+        "ai",
       ),
     ).toBe(false);
   });
