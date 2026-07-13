@@ -148,11 +148,6 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
     foodTiming: "any",
     avoidFoods: [
       {
-        food: "케일·시금치·브로콜리 (비타민 K 풍부 채소)",
-        reason: "비타민 K가 약효를 떨어뜨립니다. 일정한 양을 유지해야 합니다.",
-        severity: "high",
-      },
-      {
         food: "자몽·자몽주스",
         reason: "약물 대사를 방해해 혈중 농도가 비정상적으로 변합니다.",
         severity: "high",
