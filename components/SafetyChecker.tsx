@@ -82,7 +82,7 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
   }, [rawItems, kind]);
 
   const submit = useCallback(
-    async (paid: boolean) => {
+    async (paid: boolean, selectedOverride = selected) => {
       setError(null);
       setLoading(!paid);
       setPaidLoading(paid);
@@ -93,7 +93,7 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
           body: JSON.stringify({
             context: { persona, pregnantOrLactating, hasPrescriptionMeds },
             items,
-            selected,
+            selected: selectedOverride,
             paid,
           }),
         });
@@ -107,7 +107,7 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
 
         // Find first item that has candidate suggestions and is not selected yet.
         const firstNeed = data.normalized.find(
-          (n) => n.candidates.length > 0 && !selected[n.rawName],
+          (n) => n.candidates.length > 0 && !selectedOverride[n.rawName],
         );
         setNeedsPick(firstNeed?.rawName ?? null);
       } catch (e) {
@@ -165,11 +165,14 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
                 autoFocus={index === 0}
                 aria-label={`${c.name}, 신뢰도 ${Math.round(c.confidence * 100)}%, 종류 ${c.kind}`}
                 onClick={() => {
-                  setSelected((prev) => ({
-                    ...prev,
+                  const nextSelected = {
+                    ...selected,
                     [needsPick]: { rawName: needsPick, id: c.id, name: c.name, kind: c.kind },
-                  }));
+                  };
+                  setSelected(nextSelected);
                   setNeedsPick(null);
+                  setResult(null);
+                  void submit(false, nextSelected);
                 }}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-800 transition hover:border-brand-400 hover:bg-brand-50 focus-ring"
               >
@@ -195,7 +198,7 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
         </div>
       </div>
     );
-  }, [result, needsPick]);
+  }, [result, needsPick, selected, submit]);
 
   return (
     <section
@@ -316,7 +319,7 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
         </div>
       )}
 
-      {result && verdictUi && (
+      {result && verdictUi && !needsPick && (
         <div className="mt-4 space-y-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1">
@@ -381,4 +384,3 @@ export function SafetyChecker({ embedded = false }: { embedded?: boolean }) {
     </section>
   );
 }
-
