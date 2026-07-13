@@ -96,11 +96,6 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
     return medications.filter((m) => selectedIds[m.id]).map((m) => m.info.name);
   }, [medications, selectedIds]);
 
-  const selectedNamesKey = useMemo(
-    () => [...selectedNames].sort().join("\0"),
-    [selectedNames],
-  );
-
   const requestIdRef = useRef(0);
 
   const toggle = useCallback((id: string) => {
@@ -168,7 +163,7 @@ export const DrugInteractionChecker = forwardRef<DrugInteractionCheckerHandle, P
       return;
     }
     void runCheck(selectedNames);
-  }, [selectedNamesKey, runCheck, onNotice, onResultChange]);
+  }, [selectedNames, runCheck, onNotice, onResultChange]);
 
   const canRun = selectedNames.length >= 2 && !loading;
 

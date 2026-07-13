@@ -58,7 +58,7 @@ npm run build
 
 | 변수 | 용도 |
 |------|------|
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | 약물 AI 분석, 상호작용 설명 (**필수에 가까움**) |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | 약물 AI 분석, 상호작용 설명, 사진 스캔(`/api/scan`) (**필수에 가까움**) |
 | `CEREBRAS_API_KEY`, `CEREBRAS_MODEL`, `CEREBRAS_BASE_URL` | Gemini 대체/폴백 |
 | `AI_PROVIDER` | `analyze` 라우트: `auto` / `gemini` / `cerebras` |
 | `MEDICATION_WEB_SEARCH` | `0`이면 웹 검색 비활성 (기본: 활성) |
@@ -85,7 +85,24 @@ npm run build
 | 선택 | `TAVILY_API_KEY` | Tavily 검색 (Serper 대안) |
 | 선택 | `GEMINI_MODEL`, `AI_PROVIDER`, `CEREBRAS_*` | 모델·폴백 순서 |
 
-Production / Preview / Development 모두에 동일하게 넣은 뒤 **Redeploy** 하세요.
+Production / Preview / Development 모두에 동일하게 넣은 뒤 **Redeploy** 하세요. 특히 Dashboard에서 `Production and Preview`까지만 들어가 있고 `Development`가 빠지면 로컬/프리뷰/운영 동작이 어긋날 수 있습니다.
+
+### 운영 체크리스트
+
+배포 전후에 아래 순서로 확인하면 안전합니다.
+
+1. Vercel Environment Variables
+   - 최소 동작: `GEMINI_API_KEY` 또는 `CEREBRAS_API_KEY`
+   - 한국어 검색 품질 권장: `SERPER_API_KEY`
+   - 사진 스캔 사용 시: `GEMINI_API_KEY` 필요
+   - 영양 DB 품질 권장: `USDA_FDC_API_KEY`
+   - 선택 고급 설정: `AI_PROVIDER`, `MEDICATION_WEB_SEARCH`, `GEMINI_MODEL`, `CEREBRAS_MODEL`, `CEREBRAS_BASE_URL`, `INTERACTIONS_LLM_ORDER`, `TAVILY_API_KEY`, `COMMERCIAL_DI_*`
+2. 환경 변수 저장 후 Redeploy
+3. 배포 스모크 테스트
+   - DB에 없는 임의 문자열(예: `zzzz-not-a-drug`)은 등록되지 않아야 함
+   - `타이레놀`은 `아세트아미노펜`으로 정상 등록되어야 함
+   - 사진 스캔은 `GEMINI_API_KEY`가 있을 때만 정상 동작
+   - 영양 검색은 `USDA_FDC_API_KEY`가 있으면 운영 환경에서 안정적
 
 ### `.env.local` → Vercel 일괄 동기화 (Windows)
 
