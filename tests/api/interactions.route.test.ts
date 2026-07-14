@@ -104,7 +104,7 @@ describe("/api/interactions", () => {
       const url = String(input);
       if (url.includes("api.cerebras.ai")) {
         return new Response(
-          JSON.stringify({ choices: [{ message: { content: "의사 또는 약사와 상담하세요." } }] }),
+          JSON.stringify({ choices: [{ message: { content: "반드시 **의사 또는 약사와 상담**하세요." } }] }),
           { status: 200, headers: { "Content-Type": "application/json" } },
         );
       }
@@ -125,6 +125,7 @@ describe("/api/interactions", () => {
     const json = await readJson(res);
     expect(json.llmProvider).toBe("cerebras");
     expect(json.llmExplanation).toMatch(/상담/);
+    expect(json.llmExplanation).not.toContain("**");
     expect(json.notice ?? "").not.toMatch(/대체/);
   });
 

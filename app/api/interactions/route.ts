@@ -36,6 +36,11 @@ const BodySchema = z.object({
 });
 
 type LlmProvider = "gemini" | "cerebras";
+
+function stripMarkdownEmphasis(text: string): string {
+  return text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/__(.*?)__/g, "$1");
+}
+
 function getLlmOrder(): LlmProvider[] {
   // Optional override for this route only:
   // INTERACTIONS_LLM_ORDER="cerebras,gemini" or "gemini,cerebras"
@@ -76,6 +81,7 @@ async function explainInteractionWithGemini(payload: InteractionCheckResult, api
 - 진단·처방·복약 지시가 아니라, 왜 해당 등급(주의/병용 금기)이 붙었는지 이해를 돕는 설명만 합니다.
 - 2~4문장 한국어로 작성합니다.
 - 반드시 "의사 또는 약사와 상담" 문구를 포함합니다.
+- 마크다운 기호 없이 일반 텍스트로만 작성합니다.
 - 추측으로 새로운 약효나 병명을 단정하지 않습니다.
 - 사용자 혼자 용량을 바꾸도록 유도하지 않습니다.`;
 
@@ -119,7 +125,7 @@ ${hitBlock}
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
   if (!text) throw new Error("Gemini empty response");
-  return text;
+  return stripMarkdownEmphasis(text);
 }
 
 async function explainInteractionWithCerebras(payload: InteractionCheckResult, apiKey: string): Promise<string> {
@@ -137,6 +143,7 @@ async function explainInteractionWithCerebras(payload: InteractionCheckResult, a
 - 진단·처방·복약 지시가 아니라, 왜 해당 등급(주의/병용 금기)이 붙었는지 이해를 돕는 설명만 합니다.
 - 2~4문장 한국어로 작성합니다.
 - 반드시 "의사 또는 약사와 상담" 문구를 포함합니다.
+- 마크다운 기호 없이 일반 텍스트로만 작성합니다.
 - 추측으로 새로운 약효나 병명을 단정하지 않습니다.
 - 사용자 혼자 용량을 바꾸도록 유도하지 않습니다.`;
 
@@ -183,7 +190,7 @@ ${hitBlock}
   };
   const text = data.choices?.[0]?.message?.content?.trim() ?? "";
   if (!text) throw new Error("Cerebras empty response");
-  return text;
+  return stripMarkdownEmphasis(text);
 }
 
 export async function POST(req: NextRequest) {
