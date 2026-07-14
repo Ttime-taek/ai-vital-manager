@@ -457,8 +457,19 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
     notes: "임의로 중단하지 말고 의사 지시에 따라 천천히 감량하세요.",
   },
   {
-    name: "센트롬",
-    aliases: ["센트룸", "샌트롬", "centrum", "centrum silver", "센트롬 실버"],
+    name: "센트룸",
+    aliases: [
+      "센트롬",
+      "샌트롬",
+      "centrum",
+      "centrum silver",
+      "센트룸 실버",
+      "센트롬 실버",
+      "센트룸 멀티비타민",
+      "센트룸 종합비타민",
+      "종합비타민",
+      "multivitamin",
+    ],
     category: "종합비타민·미네랄",
     description:
       "비타민과 미네랄을 함께 포함한 종합영양제입니다. 제품 구성(철분/칼슘/마그네슘 등)에 따라 흡수에 영향을 받습니다.",
@@ -604,7 +615,7 @@ export const MEDICATION_DATABASE: MedicationInfo[] = [
   },
   {
     name: "밀크시슬",
-    aliases: ["milk thistle", "실리마린", "silymarin", "밀크 시슬"],
+    aliases: ["milk thistle", "실리마린", "silymarin", "밀크 시슬", "밀크씨슬", "밀크 씨슬"],
     category: "영양제",
     description: "간 건강 보조 목적으로 복용하는 성분(실리마린) 기반의 보충제입니다.",
     defaultFrequency: 1,

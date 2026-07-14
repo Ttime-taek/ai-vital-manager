@@ -16,4 +16,13 @@ describe("findMedication", () => {
       expect(findMedication(query)?.name).toBe("레보티록신");
     }
   });
+
+  it.each([
+    ["센트룸", "센트룸"],
+    ["centrum", "센트룸"],
+    ["비타민 C", "비타민 C"],
+    ["밀크씨슬", "밀크시슬"],
+  ])("matches quick-add supplement %s", (query, expectedName) => {
+    expect(findMedication(query)?.name).toBe(expectedName);
+  });
 });

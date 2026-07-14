@@ -21,6 +21,9 @@ const SUGGESTIONS = [
   "오메프라졸",
   "오메가3",
   "비타민 D",
+  "센트룸",
+  "비타민 C",
+  "밀크씨슬",
 ];
 
 export function MedicationInput({
